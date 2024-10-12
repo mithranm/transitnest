@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import requests
+import boto3
 
 app = FastAPI()
 
@@ -8,6 +8,16 @@ app = FastAPI()
 Requirements
 /house/search - this endpoint will use an llm with aggregated data as context to find the best house. (we choose model later)
 /graph/historic_price - this endpoint will create a gradio or streamlit embedded within our react page
+"""
+
+
+"""
+Llama json format
+{"modelId":"meta.llama3-2-3b-instruct-v1:0",
+"contentType":"application/json",
+"accept":"application/json",
+"body":{"inputs":[[{"role":"user","content":"Tell me about Paris"},{"role":"assistant","content":"Paris is a city in France."},{"role":"user","content":"Is it the biggest city in France?"}]],
+"parameters":{"max_new_tokens":512,"top_p":0.9,"temperature":0.6}}}
 """
 
 class UserParameters(BaseModel):
@@ -45,21 +55,14 @@ def search(user_params: UserParameters):
     def chat_llm():
         # This will send a post request to chat_llm.
         payload = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "hello claude!"
-                        }
-                    ]
-                }
-            ]
-        }
+            "modelId":"meta.llama3-2-3b-instruct-v1:0",
+            "contentType":"application/json",
+            "accept":"application/json",
+            "body":{"inputs":[[{"role":"user","content":"Tell me about Paris"},{"role":"assistant","content":"Paris is a city in France."},{"role":"user","content":"Is it the biggest city in France?"}]],
+            "parameters":{"max_new_tokens":512,"top_p":0.9,"temperature":0.6}}
 
-        return requests.post("arn:aws:bedrock:us-east-2:809111791479:inference-profile/us.anthropic.claude-3-5-sonnet-20240620-v1:0", data=payload) # this will be hosted on aws bedrock.
+        }
+        
 
     response = chat_llm()
     print(response.json())
