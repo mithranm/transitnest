@@ -2,9 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import pandas as pd
-import json
-import boto3
-import os
+from .prompt_refusal import chat_llm
 
 app = FastAPI()
 
@@ -48,30 +46,6 @@ def search(user_params: UserParameters):
     print(f"budget {budget}, preferred distence from public transport: {dist}, work zipcode: {zipcode}, credit score: {credit_score}, length of loan {length_of_loan}") # ensuring all values are being received.
 
     # Pass in budget, dist, zipcode into llm to get the best real estate.
-
-    def chat_llm():
-        # Extract database.
-        
-
-
-        # This will send a post request to chat_llm.
-        payload = {
-            "prompt": "can you list the stations in fairfax?"
-        }
-        
-        client = boto3.client(
-            'bedrock-runtime',
-            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-            region_name=os.environ['AWS_DEFAULT_REGION']
-        )
-
-        response = client.invoke_model(
-            modelId="us.meta.llama3-2-3b-instruct-v1:0",
-            body=json.dumps(payload)
-        )
-
-        return response
 
     #response = chat_llm()
     #print(response["body"].read()) # This is how to get the response from the llm.
