@@ -3,3 +3,4 @@ pydantic==2.9.2
 boto3==1.35.39
 pandas==2.2.3
 python-dotenv==1.0.1
+folium==0.17.0
