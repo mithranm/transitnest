@@ -68,7 +68,7 @@ def search(user_params: UserParameters):
 
     pass
 
-@app.get("/property_dataframe")
+@app.get("/get_properties")
 def get_property_dataframe_json():
     return search_algorithm.get_property_dataframe_json()
 

@@ -13,8 +13,9 @@ def run_search_algorithm(budget: int,
     dist_from_public_transport: int,
     work_zipcode: int) -> Dict:
     """
-    
+    Returns truncated property dataframe
     """
+    
     return {}
     
 def get_property_dataframe_json():
