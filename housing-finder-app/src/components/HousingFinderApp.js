@@ -45,12 +45,12 @@ const HousingFinderApp = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="bg-blue-600 text-white p-4">
-        <h1 className="text-2xl font-bold">Housing Finder</h1>
+      <header className="header">
+        <h1 className="font-bold">TransitNest</h1>
       </header>
       
       <main className="flex flex-1 overflow-hidden">
-        <div className="w-1/3 flex flex-col">
+        <div className="search_area w-1/3 flex flex-col">
           <div className="p-4 overflow-y-auto flex-grow">
             <SearchForm onSearch={handleSearch} />
             <PropertyList properties={properties} />
