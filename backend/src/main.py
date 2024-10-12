@@ -34,7 +34,7 @@ Frontend must form a POST request with the following json formatted body:
 }
 """
 
-@app.post("/house/search")
+@app.post("/house_search")
 def search(user_params: UserParameters):
     # Steps for this function.
     budget: int = user_params.budget
@@ -79,7 +79,7 @@ def search(user_params: UserParameters):
     pass
 
 
-@app.get("/graph/historic_price")
+@app.get("/graph_historic_price")
 def get_historic_price():
 
 
