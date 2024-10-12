@@ -9,6 +9,8 @@ from openai import OpenAI
 from botocore.config import Config
 from typing import List, Dict, Any
 import base64
+from sentiment_filter import SentimentBasedFilter
+
 
 load_dotenv()
 
@@ -18,6 +20,9 @@ boto3_config = Config(
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+SENTIMENT_FILTER = SentimentBasedFilter()
+
 # Initialize the OpenAI client
 
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -36,11 +41,11 @@ BOTO3_MODEL_ID_CHAT =  "us.meta.llama3-2-3b-instruct-v1:0"
 
 dataframe = pandas_loader.load_data_from_csv() #TODO: Change this
 
-def filter_string(user_prompt: str) -> bool:
+def string_is_clean(user_prompt: str) -> bool:
+    is_clean, score = SENTIMENT_FILTER.is_clean(text=user_prompt)
+    logger.info(f"IS_CLEAN {is_clean} SCORE {score}")
+    return is_clean
     
-    return False
-    
-
 def moderate_string(user_prompt: str) -> bool:
     try:
         # Call OpenAI's moderation endpoint
@@ -71,7 +76,7 @@ def single_prompt_llm(user_prompt: str) -> dict:
     """
     
     # Refuse inappropriate prompts
-    if not filter_string(user_prompt):
+    if not string_is_clean(user_prompt):
         return {"error": "Inappropriate content detected"}
     
     # Prepare the prompt with context from the dataframe
@@ -155,7 +160,6 @@ def multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     ]
     """
     
-    # Moderate the strings in messages using filter_string()
     inappropriate_contents = []  # To store all inappropriate texts found
 
     # Iterate through each message
@@ -168,7 +172,7 @@ def multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
             if 'text' in content:
                 text = content['text']
                 logging.debug(f"Checking text content {content_idx} in message {idx}: {text}")
-                if not filter_string(text):
+                if not string_is_clean(text):
                     logging.warning(f"Inappropriate content detected in message {idx}, content {content_idx}: {text}")
                     inappropriate_contents.append(text)
             elif 'image' in content:
@@ -276,6 +280,7 @@ if __name__ == "__main__":
     # print("Test case 2: Text and image input")
     # result = multiturn_prompt_llm(text_and_image_messages)
     # print(f"Result: {result}\n")
+    # write_response_to_file(result)
 
     # Test case 3: Inappropriate content
     inappropriate_messages = [
@@ -283,7 +288,7 @@ if __name__ == "__main__":
             "role": "user",
             "content": [
                 {
-                    "text": "Hello."
+                    "text": "Fuck."
                 }
             ]
         }
@@ -293,4 +298,4 @@ if __name__ == "__main__":
         result = multiturn_prompt_llm(inappropriate_messages)
     except ValueError as e:
         print(f"Caught expected ValueError: {e}\n")
-    write_response_to_file(result)
+    
