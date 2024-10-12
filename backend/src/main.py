@@ -3,10 +3,13 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import pandas as pd
 from prompt_library import single_prompt_llm
+from pandas_loader import load_data_from_csv
 
 app = FastAPI()
 
 load_dotenv()
+
+METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME = load_data_from_csv()
 
 """
 Requirements
@@ -60,3 +63,7 @@ def get_historic_price():
     # Code here (mithran)
 
     pass
+
+
+if __name__ == "__main__":
+    print(METRO_DATAFRAME["X"])

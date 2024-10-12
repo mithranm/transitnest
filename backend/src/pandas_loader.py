@@ -1,20 +1,27 @@
 import pandas as pd
-import random
-
-# Create lists with sample data for each column
-addresses = ['123 Main St', '456 Elm St', '789 Oak Ave', '321 Pine Rd', '654 Maple Ln']
-latitudes = [40.7128, 34.0522, 41.8781, 37.7749, 39.9526]
-longitudes = [-74.0060, -118.2437, -87.6298, -122.4194, -75.1652]
-rental_prices = [1500, 2000, 1800, 2500, 1700]
-proximity_transit = [0.5, 2.1, 0.3, 1.7, 3.0]  # in miles
+import os
 
 def load_data_from_csv():
-    print("stub")
-    df = pd.DataFrame({
-    'address': addresses,
-    'latitude': latitudes,
-    'longitude': longitudes,
-    'rental_price': rental_prices,
-    'proximity_transit': proximity_transit
-})
-    return df
+    # Get the directory of the current script (pandas_loader.py)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construct the path to the testdata directory
+    testdata_dir = os.path.join(current_dir, 'testdata')
+
+    # Read the metro CSV file
+    metro_path = os.path.join(testdata_dir, 'metro.csv')
+    df = pd.read_csv(metro_path)
+
+    # Select only the columns up to and including WEB_URL
+    columns_to_keep = ['X', 'Y', 'NAME', 'ADDRESS', 'LINE', 'TRAININFO_URL', 'WEB_URL']
+    METRO_DATAFRAME = df[columns_to_keep]
+    
+    # Read the property CSV file
+    property_path = os.path.join(testdata_dir, 'property.csv')
+    PROPERTY_DATAFRAME = pd.read_csv(property_path)
+    
+    # Read the zip CSV file
+    zip_path = os.path.join(testdata_dir, 'zip.csv')
+    ZIP_DATAFRAME = pd.read_csv(zip_path)
+    
+    return METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME
