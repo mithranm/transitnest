@@ -15,6 +15,7 @@ const SearchForm = ({ onSearch }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(`${formData.budget}`);
     onSearch(formData);
   };
 
