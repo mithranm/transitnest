@@ -1,6 +1,9 @@
 import boto3
 import os
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 def chat_llm():
     # Extract database.
     
@@ -24,3 +27,6 @@ def chat_llm():
     )
 
     return response
+
+if __name__ == "__main__":
+    print('hello world')
