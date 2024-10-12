@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Map } from 'lucide-react';
 import SearchForm from './SearchForm';
 import ChatAssistant from './ChatAssistant';
@@ -10,6 +11,8 @@ const HousingFinderApp = () => {
     setChatMessages([...chatMessages, { text: message, sender: 'user' }]);
     // Here you would typically make an API call to get a response
     // For now, we'll just add a dummy response
+    let response = axios("http://localhost:8000/chat")
+
     setTimeout(() => {
       setChatMessages(prev => [...prev, { 
         text: "I'm happy to provide more information. What would you like to know?", 

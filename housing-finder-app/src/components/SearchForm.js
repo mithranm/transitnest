@@ -16,8 +16,6 @@ const SearchForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // type cast data to fit the datatype of backend
-    console.log(formData);
     
     // getting a response from backend add functionality to the backend now.
     let response = axios.post("http://0.0.0.0:8000/house_search", formData)

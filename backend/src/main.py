@@ -33,7 +33,9 @@ class UserParameters(BaseModel):
     dist_from_public_transport: int # will be in miles.
     length_of_loan: int # will be in years.
     work_zipcode: int
-
+    
+class ChatRequest(BaseModel):
+    prompt: str
 """
 This endpoint will return the best ranking house with the given parameters from the frontend.
 Frontend must form a POST request with the following json formatted body:
@@ -65,6 +67,11 @@ def search(user_params: UserParameters):
 
     pass
 
+@app.post("/chat")
+def chat(req: ChatRequest):
+    response = single_prompt_llm(req.prompt)
+
+    print(response["body"])
 
 @app.get("/graph_historic_price")
 def get_historic_price():
