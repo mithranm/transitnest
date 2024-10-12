@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import pandas as pd
 from prompt_library import single_prompt_llm
 from pandas_loader import load_data_from_csv
+import search_algorithm
 
 app = FastAPI()
 
@@ -66,6 +67,10 @@ def search(user_params: UserParameters):
     #print(response["body"].read()) # This is how to get the response from the llm.
 
     pass
+
+@app.get("/property_dataframe")
+def get_property_dataframe_json():
+    return search_algorithm.get_property_dataframe_json()
 
 @app.post("/chat")
 def chat(req: ChatRequest):
