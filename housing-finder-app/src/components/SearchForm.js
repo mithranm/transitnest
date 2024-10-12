@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const SearchForm = ({ onSearch }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,8 @@ const SearchForm = ({ onSearch }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    console.log(`${formData.budget}`);
     onSearch(formData);
   };
 
@@ -29,7 +32,7 @@ const SearchForm = ({ onSearch }) => {
         <option value="30">30 years</option>
       </select>
       <input type="text" name="workZip" value={formData.workZip} onChange={handleChange} placeholder="Work Zip" className="p-2 border rounded" />
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors">
+      <button type="submit" className="submission_button rounded">
         Search
       </button>
     </form>
