@@ -1,23 +1,19 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from dotenv import load_dotenv
+import pandas as pd
+import json
 import boto3
+import os
 
 app = FastAPI()
+
+load_dotenv()
 
 """
 Requirements
 /house/search - this endpoint will use an llm with aggregated data as context to find the best house. (we choose model later)
 /graph/historic_price - this endpoint will create a gradio or streamlit embedded within our react page
-"""
-
-
-"""
-Llama json format
-{"modelId":"meta.llama3-2-3b-instruct-v1:0",
-"contentType":"application/json",
-"accept":"application/json",
-"body":{"inputs":[[{"role":"user","content":"Tell me about Paris"},{"role":"assistant","content":"Paris is a city in France."},{"role":"user","content":"Is it the biggest city in France?"}]],
-"parameters":{"max_new_tokens":512,"top_p":0.9,"temperature":0.6}}}
 """
 
 class UserParameters(BaseModel):
@@ -37,6 +33,7 @@ Frontend must form a POST request with the following json formatted body:
     "length_of_loan": int
 }
 """
+
 @app.post("/house/search")
 def search(user_params: UserParameters):
     # Steps for this function.
@@ -53,25 +50,38 @@ def search(user_params: UserParameters):
     # Pass in budget, dist, zipcode into llm to get the best real estate.
 
     def chat_llm():
-        # This will send a post request to chat_llm.
-        payload = {
-            "modelId":"meta.llama3-2-3b-instruct-v1:0",
-            "contentType":"application/json",
-            "accept":"application/json",
-            "body":{"inputs":[[{"role":"user","content":"Tell me about Paris"},{"role":"assistant","content":"Paris is a city in France."},{"role":"user","content":"Is it the biggest city in France?"}]],
-            "parameters":{"max_new_tokens":512,"top_p":0.9,"temperature":0.6}}
-
-        }
+        # Extract database.
         
 
-    response = chat_llm()
-    print(response.json())
+
+        # This will send a post request to chat_llm.
+        payload = {
+            "prompt": "can you list the stations in fairfax?"
+        }
+        
+        client = boto3.client(
+            'bedrock-runtime',
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+            region_name=os.environ['AWS_DEFAULT_REGION']
+        )
+
+        response = client.invoke_model(
+            modelId="us.meta.llama3-2-3b-instruct-v1:0",
+            body=json.dumps(payload)
+        )
+
+        return response
+
+    #response = chat_llm()
+    #print(response["body"].read()) # This is how to get the response from the llm.
 
     pass
 
 
 @app.get("/graph/historic_price")
 def get_historic_price():
+
 
     # Code here (mithran)
 
