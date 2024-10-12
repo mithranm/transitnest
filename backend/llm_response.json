@@ -1,3 +1,33 @@
 {
-  "error": "An error occurred (ValidationException) when calling the InvokeModel operation: Malformed input request: #: required key [prompt] not found#: extraneous key [inputs] is not permitted#: extraneous key [parameters] is not permitted, please reformat your input and try again."
+  "ResponseMetadata": {
+    "RequestId": "ba7551ba-5f12-4e1c-b353-3f6008a8eb76",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Sat, 12 Oct 2024 20:20:42 GMT",
+      "content-type": "application/json",
+      "content-length": "2662",
+      "connection": "keep-alive",
+      "x-amzn-requestid": "ba7551ba-5f12-4e1c-b353-3f6008a8eb76"
+    },
+    "RetryAttempts": 0
+  },
+  "output": {
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "text": "Barack Obama is an American politician who served as the 44th President of the United States from 2009 to 2017. He is a member of the Democratic Party and is widely regarded as one of the most influential and iconic leaders of the 21st century.\n\n**Early Life and Education**\n\nBarack Obama was born on August 4, 1961, in Honolulu, Hawaii, to Ann Dunham and Barack Obama Sr. His parents met while attending the University of Hawaii, and his father was from Kenya. Obama's parents divorced when he was two years old, and his father returned to Kenya. Obama's mother later married Lolo Soetoro, a native of Indonesia, and the family moved to Jakarta, Indonesia, where Obama spent four years of his childhood.\n\nObama returned to Hawaii to live with his maternal grandparents, Madelyn and Stanley Dunham. He attended Punahou School, a prestigious private school in Honolulu, and later enrolled at Occidental College in Los Angeles, California. He transferred to Columbia University in New York City, where he graduated with a Bachelor of Arts degree in 1983.\n\nAfter college, Obama worked as a community organizer in Chicago, Illinois, and later attended Harvard Law School, where he earned his Juris Doctor (J.D.) degree in 1991. After law school, Obama returned to Chicago and worked as a civil rights attorney and later as a lecturer at the University of Chicago Law School.\n\n**Career**\n\nObama's entry into politics began in 1996, when he was elected to the Illinois State Senate. He served three terms in the state senate, where he focused on issues such as education, healthcare, and civil rights. In 2004, Obama was elected to the United States Senate, representing Illinois. He served two terms in the Senate, where he became known for his bipartisan efforts and his advocacy for healthcare reform.\n\n**Presidency**\n\nIn 2008, Obama won the Democratic presidential nomination and went on to defeat Republican candidate John McCain in the general election. He was inaugurated as the 44th President of the United States on January 20, 2009. During his presidency, Obama focused on several key issues, including:\n\n1. **Healthcare Reform**: Obama signed the Affordable Care Act (ACA), also known as Obamacare, into law in 2010. The law expanded healthcare coverage to millions of Americans and prohibited insurance companies from denying coverage based on pre-existing conditions.\n2. **Economic Recovery**: Obama implemented a series of economic stimulus packages"
+        }
+      ]
+    }
+  },
+  "stopReason": "max_tokens",
+  "usage": {
+    "inputTokens": 60,
+    "outputTokens": 512,
+    "totalTokens": 572
+  },
+  "metrics": {
+    "latencyMs": 3880
+  }
 }

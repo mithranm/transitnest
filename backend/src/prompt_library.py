@@ -6,11 +6,34 @@ import pandas_loader
 import pprint
 import logging
 from openai import OpenAI
+from botocore.config import Config
+import base64
+
 load_dotenv()
+
+boto3_config = Config(
+            region_name = os.environ["AWS_DEFAULT_REGION"]
+            )
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # Initialize the OpenAI client
+
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-beam_vllm_client = OpenAI(api_key=os.environ["BEAM_API_KEY"], base_url="https://app.beam.cloud/asgi/vllm-openai-server/v1")
+# boto3_client = boto3.client(
+#         'bedrock-runtime',
+#         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+#         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+#         region_name=os.environ['AWS_DEFAULT_REGION']
+#     )
+
+boto3_client = boto3.client(
+    "bedrock-runtime", config=boto3_config
+)
+BOTO3_MODEL_ID_VISION = "us.meta.llama3-2-11b-instruct-v1:0"
+BOTO3_MODEL_ID_CHAT =  "us.meta.llama3-2-3b-instruct-v1:0"
+
+dataframe = pandas_loader.load_data_from_csv() #TODO: Change this
+
 def filter_string(user_prompt: str) -> bool:
     try:
         # Call OpenAI's moderation endpoint
@@ -34,8 +57,6 @@ def single_prompt_llm(user_prompt: str) -> dict:
     """
     Returns a Dictionary containing the LLM response.
     """
-    # Extract database
-    dataframe = pandas_loader.load_data_from_csv()
     
     # Refuse inappropriate prompts
     if not filter_string(user_prompt):
@@ -47,39 +68,12 @@ def single_prompt_llm(user_prompt: str) -> dict:
     
     # This will send a post request to Amazon Bedrock DO NOT CHANGE IMPLEMENTATION.
     payload = {
-        "inputs": [
-        [
-            {
-            "role": "user",
-            "content": "Tell me about Obama"
-            },
-            {
-            "role": "assistant",
-            "content": "Obama is the 44th president."
-            },
-            {
-            "role": "user",
-            "content": "Tell me more."
-            }
-        ]
-        ],
-        "parameters": {
-        "max_new_tokens": 1024,
-        "top_p": 0.9,
-        "temperature": 0.6
-        }
-}
-    
-    boto3_client = boto3.client(
-        'bedrock-runtime',
-        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-        region_name=os.environ['AWS_DEFAULT_REGION']
-    )
+        "prompt": full_prompt
+    }
 
     try:
         response = boto3_client.invoke_model(
-            modelId="us.meta.llama3-2-3b-instruct-v1:0",
+            modelId=BOTO3_MODEL_ID_CHAT,
             body=json.dumps(payload)
         )
         
@@ -102,6 +96,70 @@ def single_prompt_llm(user_prompt: str) -> dict:
         error_response = {"error": str(e)}
         logging.error(f"Error occurred: {error_response}")
         return error_response
+    
+def multiturn_prompt_llm(messages: dict) -> dict:
+    # user_prompt = "We have to scan all strings in the messages and iterative over them"
+    # # Refuse inappropriate prompts
+    # if not filter_string(user_prompt):
+    #     return {"error": "Inappropriate content detected"}
+    
+    # Prepare the prompt with context from the dataframe
+    context = f"Context: {dataframe.to_string()}\n\n"
+    # full_prompt = context + "\n" + user_prompt #TODO: Fix this
+    image_path = "changeme.jpeg"  #TODO: Replace with the actual path to your image
+    
+    try:
+        # Open the image file and read its contents
+        with open(image_path, "rb") as image_file:
+            image_bytes = image_file.read()
+        # Encode the image bytes to base64
+        image_data = image_bytes
+    except FileNotFoundError:
+        print(f"Image file not found at {image_path}")
+        image_data = None
+        
+        
+    # Construct the messages for the model input
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": "Tell me about Obama"
+                }
+            ]
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "text": "Obama was the 44th president."
+                }
+            ]
+        },
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": "Tell me more"
+                }
+            ]
+        },
+    ]
+    
+    response = boto3_client.converse(
+        modelId=BOTO3_MODEL_ID_CHAT, # MODEL_ID defined at the beginning
+        messages=messages,
+        inferenceConfig={
+        "maxTokens": 512,
+        "temperature": 0,
+        "topP": .1
+        }, 
+    )
+    
+    print(response['output']['message']['content'][0]['text'])
+    
+    return response
     
 def write_response_to_file(response_data, filename="llm_response.json"):
     try:
@@ -132,5 +190,5 @@ def write_response_to_file(response_data, filename="llm_response.json"):
 
 if __name__ == "__main__":
     prompt = "Can you tell me about this dataframe?"
-    response = json.dumps(chat_llm(prompt))
+    response = multiturn_prompt_llm({})
     write_response_to_file(response)
