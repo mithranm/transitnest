@@ -37,6 +37,11 @@ BOTO3_MODEL_ID_CHAT =  "us.meta.llama3-2-3b-instruct-v1:0"
 dataframe = pandas_loader.load_data_from_csv() #TODO: Change this
 
 def filter_string(user_prompt: str) -> bool:
+    
+    return False
+    
+
+def moderate_string(user_prompt: str) -> bool:
     try:
         # Call OpenAI's moderation endpoint
         response = openai_client.moderations.create(
@@ -151,11 +156,31 @@ def multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     """
     
     # Moderate the strings in messages using filter_string()
-    for message in messages:
-        for content in message['content']:
+    inappropriate_contents = []  # To store all inappropriate texts found
+
+    # Iterate through each message
+    for idx, message in enumerate(messages):
+        role = message.get('role', 'unknown')
+        logging.debug(f"Processing message {idx} with role: {role}")
+        
+        # Iterate through each content block within the message
+        for content_idx, content in enumerate(message.get('content', [])):
             if 'text' in content:
-                if not filter_string(content['text']):
-                    raise ValueError(f"Inappropriate content detected: {content['text']}")
+                text = content['text']
+                logging.debug(f"Checking text content {content_idx} in message {idx}: {text}")
+                if not filter_string(text):
+                    logging.warning(f"Inappropriate content detected in message {idx}, content {content_idx}: {text}")
+                    inappropriate_contents.append(text)
+            elif 'image' in content:
+                logging.debug(f"Processing image content {content_idx} in message {idx}: {content['image']}")
+                # TODO: Implement image moderation if necessary
+            else:
+                logging.warning(f"Unknown content type in message {idx}, content {content_idx}: {content}")
+
+    # After scanning all messages, check if any inappropriate content was found
+    if inappropriate_contents:
+        # You can customize the exception message as needed
+        raise ValueError(f"Inappropriate content detected: {inappropriate_contents}")
     
     # Detect if messages contains images and set the flag
     contains_image = contains_image_key_recursive(messages)
@@ -258,7 +283,7 @@ if __name__ == "__main__":
             "role": "user",
             "content": [
                 {
-                    "text": "Please flag this message."
+                    "text": "Hello."
                 }
             ]
         }

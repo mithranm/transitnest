@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import pandas as pd
-from .prompt_library import chat_llm
+from prompt_library import single_prompt_llm
 
 app = FastAPI()
 
