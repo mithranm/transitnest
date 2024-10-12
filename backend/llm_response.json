@@ -1,0 +1,3 @@
+{
+  "error": "An error occurred (ValidationException) when calling the InvokeModel operation: Malformed input request: #: required key [prompt] not found#: extraneous key [inputs] is not permitted#: extraneous key [parameters] is not permitted, please reformat your input and try again."
+}
