@@ -7,6 +7,7 @@ import pprint
 import logging
 from openai import OpenAI
 from botocore.config import Config
+from typing import List, Dict, Any
 import base64
 
 load_dotenv()
@@ -16,6 +17,7 @@ boto3_config = Config(
             )
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 # Initialize the OpenAI client
 
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -44,6 +46,11 @@ def filter_string(user_prompt: str) -> bool:
         
         # Check if the prompt is flagged as inappropriate
         result = response.results[0]
+        
+        if result.flagged:
+            logger.info("asdf Flagged")
+        else:
+            logger.info("asdf Not Flagged")
         
         # If any category is flagged, return False (inappropriate)
         return not result.flagged
@@ -81,83 +88,92 @@ def single_prompt_llm(user_prompt: str) -> dict:
         response_data = json.loads(response['body'].read().decode('utf-8'))
         
         # Log the full response for analysis
-        logging.info("Full API Response:")
-        logging.info(pprint.pformat(response_data))
+        logger.info("Full API Response:")
+        logger.info(pprint.pformat(response_data))
         
         # Analyze and log specific parts of the response
         if isinstance(response_data, dict):
             for key, value in response_data.items():
-                logging.info(f"Key: {key}")
-                logging.info(f"Value type: {type(value)}")
-                logging.info(f"Value preview: {str(value)[:100]}...")  # Preview first 100 characters
+                logger.info(f"Key: {key}")
+                logger.info(f"Value type: {type(value)}")
+                logger.info(f"Value preview: {str(value)[:100]}...")  # Preview first 100 characters
         
         return response_data
     except Exception as e:
         error_response = {"error": str(e)}
-        logging.error(f"Error occurred: {error_response}")
+        logger.error(f"Error occurred: {error_response}")
         return error_response
     
-def multiturn_prompt_llm(messages: dict) -> dict:
-    # user_prompt = "We have to scan all strings in the messages and iterative over them"
-    # # Refuse inappropriate prompts
-    # if not filter_string(user_prompt):
-    #     return {"error": "Inappropriate content detected"}
     
-    # Prepare the prompt with context from the dataframe
-    context = f"Context: {dataframe.to_string()}\n\n"
-    # full_prompt = context + "\n" + user_prompt #TODO: Fix this
-    image_path = "changeme.jpeg"  #TODO: Replace with the actual path to your image
-    
-    try:
-        # Open the image file and read its contents
-        with open(image_path, "rb") as image_file:
-            image_bytes = image_file.read()
-        # Encode the image bytes to base64
-        image_data = image_bytes
-    except FileNotFoundError:
-        print(f"Image file not found at {image_path}")
-        image_data = None
-        
-        
-    # Construct the messages for the model input
-    messages = [
+def recursive_search(d, key):
+    if key in d:
+        return True
+    for k, v in d.items():
+        if isinstance(v, dict):
+            if recursive_search(v, key):
+                return True
+        elif isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict):
+                    if recursive_search(item, key):
+                        return True
+    return False
+
+def contains_image_key_recursive(messages):
+    for message in messages:
+        if recursive_search(message, 'image'):
+            return True
+    return False
+
+def multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
+    """
+    Process multi-turn prompts for an LLM, including text and image inputs.
+
+    Arguments: messages in this format
+    messages = [    
         {
             "role": "user",
             "content": [
-                {
-                    "text": "Tell me about Obama"
+                {                
+                    "text": prompt
+                },
+                {                
+                    "image": {
+                        "format": "<your_file_format>",
+                        "source": {
+                            "bytes":image_data
+                        }
+                    }
                 }
             ]
-        },
-        {
-            "role": "assistant",
-            "content": [
-                {
-                    "text": "Obama was the 44th president."
-                }
-            ]
-        },
-        {
-            "role": "user",
-            "content": [
-                {
-                    "text": "Tell me more"
-                }
-            ]
-        },
+        }
     ]
+    """
     
+    # Moderate the strings in messages using filter_string()
+    for message in messages:
+        for content in message['content']:
+            if 'text' in content:
+                if not filter_string(content['text']):
+                    raise ValueError(f"Inappropriate content detected: {content['text']}")
+    
+    # Detect if messages contains images and set the flag
+    contains_image = contains_image_key_recursive(messages)
+    logger.info("Contains Image" + str(contains_image))
+    # Select the appropriate model ID based on the presence of images
+    model_id = BOTO3_MODEL_ID_VISION if contains_image else BOTO3_MODEL_ID_CHAT
+    logger.info("Model ID " + model_id)
     response = boto3_client.converse(
-        modelId=BOTO3_MODEL_ID_CHAT, # MODEL_ID defined at the beginning
+        modelId=model_id,
         messages=messages,
         inferenceConfig={
-        "maxTokens": 512,
-        "temperature": 0,
-        "topP": .1
+            "maxTokens": 512,
+            "temperature": 0,
+            "topP": 0.1
         }, 
     )
     
-    print(response['output']['message']['content'][0]['text'])
+    logger.info(response['output']['message']['content'][0]['text'])
     
     return response
     
@@ -188,7 +204,68 @@ def write_response_to_file(response_data, filename="llm_response.json"):
     except Exception as e:
         print(f"Error writing to file: {str(e)}")
 
+def read_image_file(file_path):
+    with open(file_path, "rb") as image_file:
+        return image_file.read()
+    
 if __name__ == "__main__":
-    prompt = "Can you tell me about this dataframe?"
-    response = multiturn_prompt_llm({})
-    write_response_to_file(response)
+    # Test case 1: Text-only input
+    # text_only_messages = [
+    #     {
+    #         "role": "user",
+    #         "content": [
+    #             {
+    #                 "text": "Hello, how are you?"
+    #             }
+    #         ]
+    #     }
+    # ]
+    # print("Test case 1: Text-only input")
+    # result = multiturn_prompt_llm(text_only_messages)
+    # print(f"Result: {result}\n")
+
+    # Test case 2: Text and image input
+    
+    # current_dir = os.path.dirname(os.path.abspath(__file__))
+    # image_path = os.path.join(current_dir, '..', 'mystery.jpeg')
+    # image_bytes = read_image_file(image_path)
+    # logger.info("Bruh " + str(image_bytes))
+    # text_and_image_messages = [
+    #     {
+    #         "role": "user",
+    #         "content": [
+    #             {
+    #                 "text": "What's in this image?"
+    #             },
+    #             {
+    #                 "image": {
+    #                     "format": "jpeg",
+    #                     "source": {
+    #                         "bytes": image_bytes
+    #                     }
+    #                 }
+    #             }
+    #         ]
+    #     }
+    # ]
+    # print("Test case 2: Text and image input")
+    # result = multiturn_prompt_llm(text_and_image_messages)
+    # print(f"Result: {result}\n")
+
+    # Test case 3: Inappropriate content
+    inappropriate_messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": "Please flag this message."
+                }
+            ]
+        }
+    ]
+    print("Test case 3: Inappropriate content")
+    try:
+        result = multiturn_prompt_llm(inappropriate_messages)
+    except ValueError as e:
+        print(f"Caught expected ValueError: {e}\n")
+    write_response_to_file(result)
