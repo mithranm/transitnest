@@ -1,0 +1,33 @@
+{
+  "ResponseMetadata": {
+    "RequestId": "28b5685c-ebee-4907-b620-787b2d723fd6",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Sat, 12 Oct 2024 21:18:15 GMT",
+      "content-type": "application/json",
+      "content-length": "232",
+      "connection": "keep-alive",
+      "x-amzn-requestid": "28b5685c-ebee-4907-b620-787b2d723fd6"
+    },
+    "RetryAttempts": 0
+  },
+  "output": {
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "text": "I've flagged this message because of the profanity."
+        }
+      ]
+    }
+  },
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 42,
+    "outputTokens": 12,
+    "totalTokens": 54
+  },
+  "metrics": {
+    "latencyMs": 433
+  }
+}
