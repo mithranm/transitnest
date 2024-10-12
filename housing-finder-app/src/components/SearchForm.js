@@ -29,7 +29,7 @@ const SearchForm = ({ onSearch }) => {
         <option value="30">30 years</option>
       </select>
       <input type="text" name="workZip" value={formData.workZip} onChange={handleChange} placeholder="Work Zip" className="p-2 border rounded" />
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors">
+      <button type="submit" className="special_button">
         Search
       </button>
     </form>
