@@ -2,16 +2,22 @@ import boto3
 import os
 import json
 from dotenv import load_dotenv
-
+import pandas_loader
 load_dotenv()
-def chat_llm():
+def chat_llm(user_prompt: str) -> str:
+    """
+    Returns a json formatted string as follows:
+    {
+        
+    }
+    """
     # Extract database.
+    dataframe = pandas_loader.load_data_from_csv()
     
-
-
+    
     # This will send a post request to chat_llm.
     payload = {
-        "prompt": "can you list the stations in fairfax?"
+        "prompt": user_prompt
     }
     
     client = boto3.client(
@@ -29,4 +35,4 @@ def chat_llm():
     return response
 
 if __name__ == "__main__":
-    print('hello world')
+    print(chat_llm("hello world")["body"].read())
