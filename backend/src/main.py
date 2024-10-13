@@ -158,5 +158,11 @@ def get_historic_price():
     # TODO: Implement the historic price graph functionality
     return {"message": "Historic price graph functionality not yet implemented."}
 
+    
+@app.get("/")
+def health():
+    return {"message": "healthy"}
+    
+
 if __name__ == "__main__":
     logger.info(f"Metro DataFrame 'X' column: {METRO_DATAFRAME['X']}")
