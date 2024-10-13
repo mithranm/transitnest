@@ -1,18 +1,16 @@
+// src/components/HousingFinderApp.js
+
 import React, { useState } from 'react';
-import { APIProvider, Map, Marker, Pin, GoogleMapsContext, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 import SearchForm from './SearchForm';
 import PropertyList from './PropertyList';
 import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
 
-const google = window.google;
-
 const HousingFinderApp = () => {
   const [searchParams, setSearchParams] = useState({
     budget: '',
-    creditScore: '',
     maxDistance: '',
-    loanTerm: '',
     workZip: ''
   });
   const [properties, setProperties] = useState([]);
@@ -21,24 +19,26 @@ const HousingFinderApp = () => {
 
   const handleSearch = (params) => {
     setSearchParams(params);
-    // Here you would typically make an API call to fetch properties
-    // For now, we'll just set a dummy property
-    fetch(`http://localhost:8000/get_properties?${new URLSearchParams(params)}`, {
-      method: "GET", headers: {
+    // API call to fetch properties
+    fetch(`${process.env["REACT_APP_BACKEND_URL"]}/get_properties?${new URLSearchParams(searchParams)}`, {
+      method: "GET",
+      headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       }
-    }).then(response => response.json()).then((data) => {
-      if (data === "") {
-        setProperties([]);
-      } else {
-        var json_data = JSON.parse(data);
-        setProperties(json_data);
-      }
-    }).catch((error) => console.log(error));
+    })
+      .then(response => response.json())
+      .then((data) => {
+        if (data === "") {
+          setProperties([]);
+        } else {
+          const json_data = JSON.parse(data);
+          setProperties(json_data);
+        }
+      })
+      .catch((error) => console.log(error));
 
     setPolyString(polystring);
-
   };
 
   const handleChatMessage = (message) => {
@@ -53,59 +53,69 @@ const HousingFinderApp = () => {
 
     console.log('Sending payload to /chat:', JSON.stringify(payload, null, 2));
 
-    fetch("http://localhost:8000/chat", {
+    fetch(`${process.env["REACT_APP_BACKEND_URL"]}/chat`, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log('Received response from /chat:', data);
-      if (data.message) {
-        // Ensure data.message is a valid message object
-        if (
-          data.message.role &&
-          Array.isArray(data.message.content) &&
-          typeof data.message.content[0].text === 'string'
-        ) {
-          const newAssistantMessage = data.message;
-          setChatMessages([...updatedChatMessages, newAssistantMessage]);
-        } else {
-          console.warn('Unexpected message format:', data.message);
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
         }
-      } else {
-        console.warn('No message field in response:', data);
-      }
-    })
-    .catch((error) => {
-      console.error('Error communicating with /chat:', error);
-    });
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Received response from /chat:', data);
+        if (data.message) {
+          // Ensure data.message is a valid message object
+          if (
+            data.message.role &&
+            Array.isArray(data.message.content) &&
+            typeof data.message.content[0].text === 'string'
+          ) {
+            const newAssistantMessage = data.message;
+            setChatMessages([...updatedChatMessages, newAssistantMessage]);
+          } else {
+            console.warn('Unexpected message format:', data.message);
+          }
+        } else {
+          console.warn('No message field in response:', data);
+        }
+      })
+      .catch((error) => {
+        console.error('Error communicating with /chat:', error);
+      });
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <main className="flex flex-1 overflow-hidden">
-        <div className="w-1/3 flex flex-col h-full">
-          <div className="flex-grow overflow-y-auto p-4">
+        {/* Sidebar */}
+        <div className="w-1/3 flex flex-col border-r border-gray-200">
+          {/* Search Form */}
+          <div className="flex-shrink-0 p-4">
             <SearchForm onSearch={handleSearch} />
-            <PropertyList properties={properties} />
           </div>
-          <div className="h-1/3 min-h-[200px] overflow-y-auto">
-            <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} />
+          {/* Property List and Chat Assistant */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Property List */}
+            <div className="flex-1 p-4 overflow-y-auto">
+              <PropertyList properties={properties} />
+            </div>
+            {/* Chat Assistant */}
+            <div className="flex-shrink-0 p-4 max-h-[300px] overflow-y-auto border-t border-gray-200">
+              <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} />
+            </div>
           </div>
         </div>
 
-        <div className="w-2/3 h-full">
+        {/* Map */}
+        <div className="w-2/3 flex flex-col">
           <APIProvider apiKey={process.env.REACT_APP_MAP_API_KEY}>
             <Map
-              style={{ width: '100%', height: '100%' }}
+              className="flex-1 w-full"
               defaultCenter={{ lat: 38.897615111606, lng: -77.03526739437355 }}
               defaultZoom={10}
               gestureHandling={'greedy'}

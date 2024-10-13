@@ -4,42 +4,74 @@ import HousingFinderApp from './components/HousingFinderApp';
 
 // Home component
 const Home = () => (
-  <div className="container mx-auto mt-4">
-    <h1 className="text-2xl font-bold">Welcome to TransitNest</h1>
-    <p className="mt-2">Find your perfect home with our Housing Finder tool.</p>
+  <div className="container mx-auto mt-8 px-4">
+    <h1 className="text-3xl font-bold text-center">Welcome to TransitNest</h1>
+    <p className="mt-4 text-center text-lg">
+      Find your perfect home with our Housing Finder tool.
+    </p>
   </div>
 );
 
 // About component
 const About = () => (
-  <div className="container mx-auto mt-4">
-    <h1 className="text-2xl font-bold">About TransitNest</h1>
-    <p className="mt-2">TransitNest is a platform designed to help you find housing options that suit your needs and budget.</p>
+  <div className="container mx-auto mt-8 px-4">
+    <h1 className="text-3xl font-bold text-center">About TransitNest</h1>
+    <p className="mt-4 text-center text-lg">
+      TransitNest is a platform designed to help you find housing options that suit your needs and budget.
+    </p>
   </div>
 );
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <header className="bg-gray-800 text-white p-4">
-          <h1 className="text-2xl font-bold text-center">Perspire</h1>
-          <nav className="mt-1">
-            <ul className="flex justify-center space-x-4">
-              <li><Link to="/" className="hover:text-gray-300">Home</Link></li>
-              <li><Link to="/TransitNest" className="hover:text-gray-300">TransitNest</Link></li>
-              <li><Link to="/about" className="hover:text-gray-300">About</Link></li>
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <header className="bg-gray-800 text-white p-4 flex-shrink-0">
+          <h1 className="text-3xl font-bold text-center">TransitNest</h1>
+          <nav className="mt-2">
+            <ul className="flex justify-center space-x-6">
+              <li>
+                <Link
+                  to="/"
+                  className="hover:text-gray-300 transition-colors duration-200"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/TransitNest"
+                  className="hover:text-gray-300 transition-colors duration-200"
+                >
+                  TransitNest
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="hover:text-gray-300 transition-colors duration-200"
+                >
+                  About
+                </Link>
+              </li>
             </ul>
           </nav>
         </header>
 
-        <main>
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/TransitNest" element={<HousingFinderApp />} />
-            <Route path="/About" element={<About />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </main>
+
+        {/* Footer */}
+        <footer className="bg-gray-800 text-white p-4 text-center flex-shrink-0">
+          &copy; {new Date().getFullYear()} TransitNest. All rights reserved.
+        </footer>
       </div>
     </Router>
   );
