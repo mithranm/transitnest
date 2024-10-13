@@ -18,7 +18,7 @@ code {
 
 
 .header{
-  background-color: rgba(146, 199, 207);
+  background-color: #1d6fa3;
   font-size: 40px;
   -webkit-text-fill-color: rgba(251, 249, 241);
   padding: 0px 0px 5px 15px;
@@ -91,7 +91,6 @@ code {
 
 .searchForm{
   border-radius: 10px;
-  background: rgb(255,191,38);
-  background: linear-gradient(180deg, rgba(255,191,38,1) 40%, rgba(255,255,255,0) 100%);
+  background: #1d6fa3;
   padding: 10px;
 }
