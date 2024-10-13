@@ -92,7 +92,7 @@ const HousingFinderApp = () => {
   return (
     <div className="flex flex-col h-screen">
       <header className="header">
-        <h1 className="text-2xl font-bold">Housing Finder</h1>
+        <h1 className="text-2xl font-bold">TransitNest Housing</h1>
       </header>
 
       <main className="flex flex-1 overflow-hidden">
