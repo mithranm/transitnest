@@ -190,10 +190,10 @@ const HousingFinderApp = () => {
               <button
                 onClick={handleSendScreenshot}
                 className="
-                  bg-indigo-800 text-white 
+                  bg-gray-800 text-white 
                   p-2 w-full
                   rounded-md 
-                  hover:bg-indigo-700 
+                  hover:bg-cyan-800 
                   transition-colors duration-200 
                   flex items-center justify-center
                 "
