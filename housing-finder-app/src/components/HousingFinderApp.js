@@ -7,6 +7,7 @@ import PropertyList from './PropertyList';
 import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
 import { Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 const HousingFinderApp = () => {
   const [searchParams, setSearchParams] = useState({
@@ -53,16 +54,17 @@ const HousingFinderApp = () => {
   const handleChatMessage = (message) => {
     setThinking(true);
     const newUserMessage = { role: "user", content: [{ text: message }] };
-    const updatedChatMessages = [...chatMessages, newUserMessage];
-    setChatMessages(updatedChatMessages);
-
+    
+    // Update chatMessages using functional update to ensure latest state
+    setChatMessages((prevMessages) => [...prevMessages, newUserMessage]);
+  
     // Prepare payload as per backend expectation
     const payload = {
-      messages: updatedChatMessages
+      messages: [...chatMessages, newUserMessage], // Or use prevMessages if needed
     };
-
+  
     console.log('Sending payload to /chat:', JSON.stringify(payload, null, 2));
-
+  
     fetch(`${process.env["REACT_APP_BACKEND_URL"]}/chat`, {
       method: "POST",
       headers: { 
@@ -88,7 +90,8 @@ const HousingFinderApp = () => {
             typeof data.message.content[0].text === 'string'
           ) {
             const newAssistantMessage = data.message;
-            setChatMessages([...updatedChatMessages, newAssistantMessage]);
+            // Use functional update here as well
+            setChatMessages((prevMessages) => [...prevMessages, newAssistantMessage]);
           } else {
             console.warn('Unexpected message format:', data.message);
           }
@@ -99,6 +102,68 @@ const HousingFinderApp = () => {
       .catch((error) => {
         setThinking(false);
         console.error('Error communicating with /chat:', error);
+      });
+  };
+  
+  const handleSendScreenshot = () => {
+    const element = document.body; // Or use appRef.current for a specific element
+
+    html2canvas(element)
+      .then((canvas) => {
+        const imageData = canvas.toDataURL('image/png');
+        const base64Data = imageData.split(',')[1]; // Remove the data URL prefix
+
+        const newMessage = {
+          role: 'user',
+          content: [
+            {
+              text: 'Here is a screenshot of the application.'
+            },
+            {
+              image: {
+                format: 'png',
+                source: {
+                  bytes: base64Data
+                }
+              }
+            }
+          ]
+        };
+
+        const updatedChatMessages = [...chatMessages, newMessage];
+        setChatMessages(updatedChatMessages);
+
+        const payload = {
+          messages: updatedChatMessages
+        };
+
+        fetch(`${process.env["REACT_APP_BACKEND_URL"]}/chat`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Error: ${response.statusText}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.message) {
+              const newAssistantMessage = data.message;
+              setChatMessages([...updatedChatMessages, newAssistantMessage]);
+            } else {
+              console.warn('No message field in response:', data);
+            }
+          })
+          .catch((error) => {
+            console.error('Error communicating with /chat:', error);
+          });
+      })
+      .catch((error) => {
+        console.error('Error capturing screenshot:', error);
       });
   };
 
@@ -120,6 +185,21 @@ const HousingFinderApp = () => {
             {/* Chat Assistant */}
             <div className="flex-shrink-0 p-4 max-h-[300px] overflow-y-auto border-t border-gray-200">
               <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} isThinking={isThinking} />
+            </div>
+            <div className="flex-shrink-0 p-4 border-t border-gray-200">
+              <button
+                onClick={handleSendScreenshot}
+                className="
+                  bg-indigo-800 text-white 
+                  p-2 w-full
+                  rounded-md 
+                  hover:bg-indigo-700 
+                  transition-colors duration-200 
+                  flex items-center justify-center
+                "
+              >
+                Send Screenshot to Assistant
+              </button>
             </div>
           </div>
         </div>
