@@ -49,11 +49,11 @@
     "axios": "1.7.7",
     "plotly.js": "2.35.2",
     "postcss": "^8.4.47",
+    "react-bootstrap": "2.10.5",
     "react-leaflet": "4.2.1",
     "react-plotly.js": "2.6.0",
-    "react-router-dom": "6.27.0",
-    "react-bootstrap": "2.10.5",
     "react-router-bootstrap": "0.26.3",
+    "react-router-dom": "^6.27.0",
     "tailwindcss": "^3.4.13",
     "tailwindcss-cli": "0.1.2"
   }
