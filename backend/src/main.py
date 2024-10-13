@@ -3,9 +3,11 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import pandas as pd
-from prompt_library import single_prompt_llm
+from prompt_library import multiturn_prompt_llm
 from pandas_loader import load_data_from_csv
 import search_algorithm
+from typing import List, Dict, Any
+import logging
 
 app = FastAPI()
 
@@ -19,6 +21,10 @@ app.add_middleware(
 )
 
 load_dotenv()
+
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME = load_data_from_csv()
 
@@ -34,9 +40,14 @@ class UserParameters(BaseModel):
     dist_from_public_transport: int # will be in miles.
     length_of_loan: int # will be in years.
     work_zipcode: int
-    
-class ChatRequest(BaseModel):
-    prompt: str
+
+class Message(BaseModel):
+    role: str
+    content:List[Dict[str, str]]
+
+class MultiPromptRequest(BaseModel):
+    messages: List[Message]
+
 """
 This endpoint will return the best ranking house with the given parameters from the frontend.
 Frontend must form a POST request with the following json formatted body:
@@ -73,10 +84,10 @@ def get_property_dataframe_json():
     return search_algorithm.get_property_dataframe_json()
 
 @app.post("/chat")
-def chat(req: ChatRequest):
-    response = single_prompt_llm(req.prompt)
+def chat(req: MultiPromptRequest):
+    response = multiturn_prompt_llm(req.messages)
 
-    print(response["body"])
+    print(response["output"])
 
 @app.get("/graph_historic_price")
 def get_historic_price():

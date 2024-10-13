@@ -10,7 +10,7 @@ from botocore.config import Config
 from typing import List, Dict, Any
 import base64
 from sentiment_filter import SentimentBasedFilter
-
+from pydantic import BaseModel
 
 load_dotenv()
 

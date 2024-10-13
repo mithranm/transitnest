@@ -37,15 +37,32 @@ const HousingFinderApp = () => {
   };
 
   const handleChatMessage = (message) => {
-    setChatMessages([...chatMessages, { text: message, sender: 'user' }]);
-    // Here you would typically make an API call to get a response
-    // For now, we'll just add a dummy response
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, {
-        text: "I'm happy to provide more information. What would you like to know?",
-        sender: 'assistant'
-      }]);
-    }, 1000);
+    setChatMessages([...chatMessages, { role: "user", content: [{text: message}] }]);
+    // gotta format to this json.
+    //   {
+    //     "messages": [    
+    //         {
+    //             "role": "user",
+    //             "content": [
+    //                 {                
+    //                     "text": "hi"
+    //                 }
+    //             ]
+    //         }
+    //     ]
+    // }
+    let payload = {
+      messages: chatMessages
+    }
+
+    console.log(JSON.stringify(payload));
+    fetch("http://localhost:8000/chat", {method: "POST", header: {"Content-Type": "application/json"}, body: JSON.stringify(payload)})
+    .then(response => response.json()).then((data) => {
+      console.log(data);
+    })
+    .catch((error) => {
+      console.error(error);
+    })
   };
 
   return (

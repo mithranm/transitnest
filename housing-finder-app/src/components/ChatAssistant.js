@@ -16,9 +16,9 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
     <div className="border-t p-4">
       <div className="bg-gray-100 p-4 rounded-lg mb-4 h-32 overflow-y-auto">
         {messages.map((message, index) => (
-          <p key={index} className={message.sender === 'assistant' ? 'font-bold' : ''}>
-            {message.sender === 'assistant' ? 'Assistant: ' : 'You: '}
-            {message.text}
+          <p key={index} className={message.role === 'assistant' ? 'font-bold' : ''}>
+            {message.role === 'assistant' ? 'Assistant: ' : 'You: '}
+            {message.content[0].text}
           </p>
         ))}
       </div>
