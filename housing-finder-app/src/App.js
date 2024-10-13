@@ -31,8 +31,43 @@ const Home = () => (
 const About = () => (
   <div className="container mx-auto mt-8 px-4">
     <h1 className="text-3xl font-bold text-center">About TransitNest</h1>
-    <p className="mt-4 text-center text-lg">
-      TransitNest is a platform designed to help you find housing options that suit your needs and budget.
+    <p className="mt-4 text-left text-lg">
+    </p>
+    <p className="mt-4 text-left text-lg">
+    TransitNest is a comprehensive platform designed to help individuals and families find affordable housing options near major public transportation networks, such as WMATA, Fairfax Connector, Loudoun Transit, and MTA. We recognize that the daily commute is an important factor in choosing a place to live. Our goal is to ensure you find a home that fits both your budget and commuting preferences, so you can enjoy affordable living with convenient access to public transportation.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    By combining advanced search filters, interactive mapping, and transit data, TransitNest allows you to explore housing options in the Washington D.C. metropolitan area and beyond with ease. Whether you're looking for an apartment close to your office or a house in a quieter suburb with excellent transit connectivity, TransitNest makes the process simple and effective.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    How to Use TransitNest
+    </p>
+    <p className="mt-4 text-left text-lg">
+    1. Enter Your Search Criteria
+    </p>
+    <p className="mt-4 text-left text-lg">
+    Budget: Input your maximum housing budget (e.g., $2000 for rent). This will help you filter out properties that exceed your financial limits, so you can focus on homes you can afford.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    Preferred Distance: Enter the maximum distance you’re willing to travel from your home to your workplace or nearest transit hub. This allows the platform to show properties that are within a reasonable commuting distance based on your preferences.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    Work Zip Code: Input your work location’s zip code (e.g., 20105). This ensures that TransitNest focuses on housing options with easy access to transit lines or routes that connect to your work location, making your daily commute smoother and faster.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    2. Click "Search"
+    </p>
+    <p className="mt-4 text-left text-lg">
+    After entering your criteria, click the Search button. TransitNest will search its housing database and provide a list of available properties that meet your budget, distance preferences, and proximity to your work location.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    3. Explore the Interactive Map
+    </p>
+    <p className="mt-4 text-left text-lg">
+    Once you’ve clicked "Search," TransitNest displays housing options as markers on the interactive map. You can zoom in and out to explore different neighborhoods and get a better sense of the properties’ locations relative to public transportation routes.
+    </p>
+    <p className="mt-4 text-left text-lg">
+    Map View: Switch between different views, including "Map" (default) and "Satellite," to get a clearer idea of the area around potential homes. The map will also display nearby bus stops, metro stations, and transit routes, helping you visualize your daily commute.
     </p>
   </div>
 );
