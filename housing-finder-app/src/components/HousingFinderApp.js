@@ -24,7 +24,7 @@ const HousingFinderApp = () => {
 
   const handleSearch = (params) => {
     setLoading(true);
-    setSearchParams(params);
+    setSearchParams(searchParams);
   
     // Convert params to query string
     const queryParams = new URLSearchParams(params).toString();

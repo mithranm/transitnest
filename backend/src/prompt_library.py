@@ -27,12 +27,6 @@ SENTIMENT_FILTER = SentimentBasedFilter()
 # Initialize the OpenAI client
 
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-# boto3_client = boto3.client(
-#         'bedrock-runtime',
-#         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-#         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-#         region_name=os.environ['AWS_DEFAULT_REGION']
-#     )
 
 boto3_client = boto3.client(
     "bedrock-runtime", config=boto3_config
@@ -274,7 +268,7 @@ def create_messages_for_classification(classification_prompt: str, user_prompt: 
 
 def smart_multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     user_prompt = messages[-1]["content"][0]["text"]
-    print(f"user_prompt: {user_prompt}")
+    logger.info(f"user_prompt: {user_prompt}")
     
     is_relevant_response = openai_client.chat.completions.create(model="gpt-4o-mini", messages=
         create_messages_for_classification(
@@ -284,6 +278,7 @@ def smart_multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     )
     print(f"is_relevant_response: {is_relevant_response}")
     is_relevant = "yes" in is_relevant_response.choices[0].message.content.lower()
+    is_relevant = True
     if not is_relevant:
         response = {
             "output": {
@@ -299,38 +294,24 @@ def smart_multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
         return response
     
     internet_needed_response_raw = multiturn_prompt_llm(messages)
-    needs_info_response = openai_client.chat.completions.create(model="gpt-4o-mini", messages=
-        create_messages_for_classification(
-            "Would this prompt benefit from extra information to answer the prompt, such as information from the internet? For example, greetings do not need extra info.\nSTRICTLY RESPOND WITH YES OR NO",
-            user_prompt
-        )
-    )
-    needs_info = "yes" in needs_info_response.choices[0].message.content.lower()
-    needs_info = True
+    needs_info = "internet" in user_prompt.message.content.lower()
+    needs_info = False
+    logger.info(f"NEEDS INFO {needs_info}")
+    print(f"NEEDS INFO {needs_info}")
     if needs_info:
-        messages.append(
-                {
-                "role": "assistant",
-                "content": [
-                    {                
-                        "text": internet_needed_response_raw['output']['message']['content'][0]['text']
-                    }
-                ]
-            }
-        )
-        context = query_perplexity(flatten_messages(messages))
-        logger.info(f"Perplexity Context\n {context}")
-        messages.append(
-            {
-                "role": "user",
+        internet_query_response = query_perplexity(flatten_messages(messages))
+        logger.info(f"Perplexity Response\n {internet_query_response}")
+        response = {
+            "output": {
+                "message": {
                 "content": [
                     {
-                        "text": f"Here is additional context to help you answer my question \n {context}"
+                    "text": internet_query_response
                     }
                 ]
+                }
             }
-        )
-        return multiturn_prompt_llm(messages)
+        }
     else:
         return internet_needed_response_raw
 

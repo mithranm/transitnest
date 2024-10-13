@@ -47,24 +47,6 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Create formatters
-file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-# File handler (with rotation)
-file_handler = RotatingFileHandler('app.log', maxBytes=10*1024*1024, backupCount=5)  # 10MB per file, keep 5 backups
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(file_formatter)
-
-# Console handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(console_formatter)
-
-# Add handlers to logger
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
 # Load dataframes
 METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME = load_data_from_csv()
 
