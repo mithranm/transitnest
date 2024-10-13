@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -6,6 +6,7 @@ import pandas as pd
 from prompt_library import single_prompt_llm
 from pandas_loader import load_data_from_csv
 import search_algorithm
+import json
 
 app = FastAPI()
 
@@ -69,8 +70,20 @@ def search(user_params: UserParameters):
     pass
 
 @app.get("/get_properties")
-def get_property_dataframe_json():
-    return search_algorithm.get_property_dataframe_json()
+def get_property_dataframe_json(budget=5000, creditScore=0, maxDistance=2, loanTerm=0, workZip=22030):
+    if budget=='':
+        budget=5000
+    if creditScore=='':
+        creditScore=0
+    if maxDistance=='':
+        maxDistance=2
+    if loanTerm=='':
+        loanTerm=0
+    if workZip=='':
+        workZip=22030
+
+    output = search_algorithm.run_search_algorithm(float(budget), float(maxDistance), int(workZip))
+    return output
 
 @app.post("/chat")
 def chat(req: ChatRequest):
