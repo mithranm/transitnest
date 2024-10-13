@@ -162,24 +162,25 @@ def multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     
     inappropriate_contents = []  # To store all inappropriate texts found
 
-    # Iterate through each message
+   # Iterate through each message
     for idx, message in enumerate(messages):
+        logger.info(f"Message: {message}")
         role = message.get('role', 'unknown')
-        logging.debug(f"Processing message {idx} with role: {role}")
+        logger.debug(f"Processing message {idx} with role: {role}")
         
         # Iterate through each content block within the message
         for content_idx, content in enumerate(message.get('content', [])):
             if 'text' in content:
                 text = content['text']
-                logging.debug(f"Checking text content {content_idx} in message {idx}: {text}")
+                logger.debug(f"Checking text content {content_idx} in message {idx}: {text}")
                 if not string_is_clean(text):
-                    logging.warning(f"Inappropriate content detected in message {idx}, content {content_idx}: {text}")
+                    logger.warning(f"Inappropriate content detected in message {idx}, content {content_idx}: {text}")
                     inappropriate_contents.append(text)
             elif 'image' in content:
-                logging.debug(f"Processing image content {content_idx} in message {idx}: {content['image']}")
+                logger.debug(f"Processing image content {content_idx} in message {idx}: {content['image']}")
                 # TODO: Implement image moderation if necessary
             else:
-                logging.warning(f"Unknown content type in message {idx}, content {content_idx}: {content}")
+                logger.warning(f"Unknown content type in message {idx}, content {content_idx}: {content}")
 
     # After scanning all messages, check if any inappropriate content was found
     if inappropriate_contents:

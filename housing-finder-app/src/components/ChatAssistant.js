@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+// ChatAssistant.js
+
+import React from 'react';
 import { Send } from 'lucide-react';
 
 const ChatAssistant = ({ messages, onSendMessage }) => {
-  const [input, setInput] = useState('');
+  const [input, setInput] = React.useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -15,12 +17,26 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
   return (
     <div className="border-t p-4">
       <div className="bg-gray-100 p-4 rounded-lg mb-4 h-32 overflow-y-auto">
-        {messages.map((message, index) => (
-          <p key={index} className={message.sender === 'assistant' ? 'font-bold' : ''}>
-            {message.sender === 'assistant' ? 'Assistant: ' : 'You: '}
-            {message.text}
-          </p>
-        ))}
+        {messages.map((message, index) => {
+          // Ensure that content and text exist and are strings
+          if (
+            message.content &&
+            Array.isArray(message.content) &&
+            message.content.length > 0 &&
+            typeof message.content[0].text === 'string'
+          ) {
+            return (
+              <p key={index} className={message.role === 'assistant' ? 'font-bold' : ''}>
+                {message.role === 'assistant' ? 'Assistant: ' : 'You: '}
+                {message.content[0].text}
+              </p>
+            );
+          } else {
+            // Log a warning if the message structure is unexpected
+            console.warn(`Unexpected message structure at index ${index}:`, message);
+            return null; // Or render a fallback UI element
+          }
+        })}
       </div>
       <form onSubmit={handleSubmit} className="flex">
         <input 
