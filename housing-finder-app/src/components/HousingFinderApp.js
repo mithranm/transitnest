@@ -8,7 +8,6 @@ import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
 import { Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { useRef } from 'react';
 
 
 
