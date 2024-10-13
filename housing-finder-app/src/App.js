@@ -28,9 +28,9 @@ function App() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <header className="bg-gray-800 text-white p-4 flex-shrink-0">
-          <h1 className="text-3xl font-bold text-center">TransitNest</h1>
+          <h1 className="text-3xl font-bold text-left">TransitNest</h1>
           <nav className="mt-2">
-            <ul className="flex justify-center space-x-6">
+            <ul className="flex justify-end space-x-6">
               <li>
                 <Link
                   to="/"
@@ -44,7 +44,7 @@ function App() {
                   to="/TransitNest"
                   className="hover:text-gray-300 transition-colors duration-200"
                 >
-                  TransitNest
+                  Housing Finder
                 </Link>
               </li>
               <li>

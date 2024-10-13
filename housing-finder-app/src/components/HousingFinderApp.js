@@ -6,6 +6,7 @@ import SearchForm from './SearchForm';
 import PropertyList from './PropertyList';
 import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
+import { Loader2 } from 'lucide-react';
 
 const HousingFinderApp = () => {
   const [searchParams, setSearchParams] = useState({
@@ -16,8 +17,10 @@ const HousingFinderApp = () => {
   const [properties, setProperties] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
   const [polystring, setPolyString] = useState([]);
+  const [isLoading, setLoading] = useState(false);
 
   const handleSearch = (params) => {
+    setLoading(true);
     setSearchParams(params);
     // API call to fetch properties
     fetch(`${process.env["REACT_APP_BACKEND_URL"]}/get_properties?${new URLSearchParams(searchParams)}`, {
@@ -30,13 +33,18 @@ const HousingFinderApp = () => {
       .then(response => response.json())
       .then((data) => {
         if (data === "") {
+          setLoading(false);
           setProperties([]);
         } else {
+          setLoading(false);
           const json_data = JSON.parse(data);
           setProperties(json_data);
         }
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        setLoading(false);
+        console.log(error);
+      });
 
     setPolyString(polystring);
   };
@@ -133,6 +141,11 @@ const HousingFinderApp = () => {
                 />
               ))}
             </Map>
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+              </div>
+            )}
           </APIProvider>
         </div>
       </main>
