@@ -84,3 +84,10 @@ code {
 .navLink{
   padding:1rem;
 }
+
+.searchForm{
+  border-radius: 10px;
+  background: rgb(255,191,38);
+  background: linear-gradient(180deg, rgba(255,191,38,1) 40%, rgba(255,255,255,0) 100%);
+  padding: 10px;
+}

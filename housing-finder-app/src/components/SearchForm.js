@@ -17,7 +17,7 @@ const SearchForm = ({ onSearch }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 grid grid-cols-2 gap-2">
+    <form onSubmit={handleSubmit} className="searchForm mb-4 grid grid-cols-2 gap-2">
       <label>Budget</label>
       <input type="number" name="budget" value={formData.budget} onChange={handleChange} placeholder="Budget" className="p-2 border rounded" />
       <label>Preferred distance</label>
