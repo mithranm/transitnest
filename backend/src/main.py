@@ -1,6 +1,6 @@
 # main.py
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -12,15 +12,11 @@ from typing import List, Dict, Any
 import logging
 import traceback
 import json  # Import json for serialization
-
-from rate_limiter import RateLimiter  # Import the RateLimiter class
+from rate_limiter import RateLimiter
 
 # Initialize FastAPI app
 app = FastAPI()
-
-# Initialize the RateLimiter
 rate_limiter = RateLimiter()
-
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -49,8 +45,8 @@ Requirements
 # Pydantic Models for /house_search
 class UserParameters(BaseModel):
     budget: int
-    dist_from_public_transport: int  # in miles
-    work_zipcode: int
+    credit_score: int
+    dist_from_public_transport: int
 
 # Pydantic Models for /chat
 class ContentItem(BaseModel):
@@ -82,14 +78,11 @@ Expects a POST request with a JSON body:
 }
 """
 @app.post("/house_search")
-@rate_limiter.limit(limit=10, window=60)  # Limit to 10 requests per minute per IP
-async def search(user_params: UserParameters, request: Request):
+def search(user_params: UserParameters):
     # Extract parameters
     budget = user_params.budget
     dist = user_params.dist_from_public_transport
     zipcode = user_params.work_zipcode
-    credit_score = user_params.credit_score
-    length_of_loan = user_params.length_of_loan
 
     logger.info(f"Received search parameters: Budget={budget}, Distance={dist} miles, Zipcode={zipcode}, Credit Score={credit_score}, Loan Length={length_of_loan} years")
 
@@ -99,41 +92,25 @@ async def search(user_params: UserParameters, request: Request):
         "address": "123 Main St",
         "price": budget - 10000,
         "distance_from_transport": dist,
-        "zipcode": zipcode,
-        "credit_score_required": credit_score,
-        "loan_length": length_of_loan
+        "zipcode": zipcode
     }
 
     return {"best_house": best_house}
 
 @app.get("/get_properties")
-@rate_limiter.limit(limit=20, window=60)  # Limit to 20 requests per minute per IP
-async def get_property_dataframe_json(
-    request: Request,
-    budget: float = 5000,
-    creditScore: int = 0,
-    maxDistance: float = 2,
-    loanTerm: int = 0,
-    workZip: int = 22030
-):
-    # Validate and set default values if necessary
-    if budget == '':
-        budget = 5000
-    if creditScore == '':
-        creditScore = 0
-    if maxDistance == '':
-        maxDistance = 2
-    if loanTerm == '':
-        loanTerm = 0
-    if workZip == '':
-        workZip = 22030
+def get_property_dataframe_json(budget=5000, creditScore=0, maxDistance=2, loanTerm=0, workZip=22030):
+    if budget=='':
+        budget=5000
+    if maxDistance=='':
+        maxDistance=2
+    if workZip=='':
+        workZip=22030
 
     output = search_algorithm.run_search_algorithm(float(budget), float(maxDistance), int(workZip))
     return output
 
 @app.post("/chat")
-@rate_limiter.limit(limit=30, window=60)  # Limit to 30 requests per minute per IP
-async def chat(request: MultiPromptRequest, req: Request):
+def chat(request: MultiPromptRequest):
     try:
         # Convert the Pydantic model to a dict
         payload = request.dict()
@@ -168,15 +145,15 @@ async def chat(request: MultiPromptRequest, req: Request):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.get("/graph_historic_price")
-@rate_limiter.limit(limit=5, window=60)  # Limit to 5 requests per minute per IP
-async def get_historic_price(request: Request):
+def get_historic_price():
     # TODO: Implement the historic price graph functionality
     return {"message": "Historic price graph functionality not yet implemented."}
 
+    
 @app.get("/")
-@rate_limiter.limit(limit=60, window=60)  # Limit to 60 requests per minute per IP
-async def health(request: Request):
+def health():
     return {"message": "healthy"}
+    
 
 if __name__ == "__main__":
     logger.info(f"Metro DataFrame 'X' column: {METRO_DATAFRAME['X']}")
