@@ -1,5 +1,3 @@
-// src/components/HousingFinderApp.js
-
 import React, { useState } from 'react';
 import { APIProvider, InfoWindow, Map, Marker } from '@vis.gl/react-google-maps';
 import SearchForm from './SearchForm';
@@ -9,7 +7,6 @@ import { Polyline } from './polyline.tsx';
 import { Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
-
 const HousingFinderApp = () => {
   const [searchParams, setSearchParams] = useState({
     budget: '',
@@ -18,10 +15,12 @@ const HousingFinderApp = () => {
   });
   const [properties, setProperties] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
-  const [polystring, setPolyString] = useState([]);
+  const [polystring, setPolyString] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [isThinking, setThinking] = useState(false);
-  const [currentProperty, setCurrentProperty] = useState([]);
+  const [currentProperty, setCurrentProperty] = useState(null);
+  const defaultCenter = { lat: 38.897615111606, lng: -77.03526739437355 };
+  const defaultZoom = 10.5;
 
   const handleSearch = (params) => {
     setLoading(true);
@@ -49,8 +48,6 @@ const HousingFinderApp = () => {
         setLoading(false);
         console.log(error);
       });
-
-    setPolyString(polystring);
   };
 
   const changePoly = (index) => {
@@ -62,12 +59,10 @@ const HousingFinderApp = () => {
     setThinking(true);
     const newUserMessage = { role: "user", content: [{ text: message }] };
 
-    // Update chatMessages using functional update to ensure latest state
     setChatMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
-    // Prepare payload as per backend expectation
     const payload = {
-      messages: [...chatMessages, newUserMessage], // Or use prevMessages if needed
+      messages: [...chatMessages, newUserMessage],
     };
 
     console.log('Sending payload to /chat:', JSON.stringify(payload, null, 2));
@@ -90,14 +85,12 @@ const HousingFinderApp = () => {
         setThinking(false);
         console.log('Received response from /chat:', data);
         if (data.message) {
-          // Ensure data.message is a valid message object
           if (
             data.message.role &&
             Array.isArray(data.message.content) &&
             typeof data.message.content[0].text === 'string'
           ) {
             const newAssistantMessage = data.message;
-            // Use functional update here as well
             setChatMessages((prevMessages) => [...prevMessages, newAssistantMessage]);
           } else {
             console.warn('Unexpected message format:', data.message);
@@ -113,12 +106,12 @@ const HousingFinderApp = () => {
   };
 
   const handleSendScreenshot = () => {
-    const element = document.body; // Or use appRef.current for a specific element
+    const element = document.body;
 
     html2canvas(element)
       .then((canvas) => {
         const imageData = canvas.toDataURL('image/png');
-        const base64Data = imageData.split(',')[1]; // Remove the data URL prefix
+        const base64Data = imageData.split(',')[1];
 
         const newMessage = {
           role: 'user',
@@ -214,29 +207,34 @@ const HousingFinderApp = () => {
           <APIProvider apiKey={process.env.REACT_APP_MAP_API_KEY}>
             <Map
               className="flex-1 w-full"
-              defaultCenter={{ lat: 38.897615111606, lng: -77.03526739437355 }}
-              defaultZoom={10.5}
-              gestureHandling={'none'}
+              defaultCenter={defaultCenter}
+              defaultZoom={defaultZoom}
+              gestureHandling={'auto'}
               disableDefaultUI={true}
             >
+              {currentProperty && (
+                <>
+                  <Marker position={{ lat: currentProperty.LAT, lng: currentProperty.LNG }} />
+                  <InfoWindow position={{ lat: currentProperty.LAT, lng: currentProperty.LNG }}>
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-800">
+                        {currentProperty.City}, {currentProperty.State} {currentProperty.ZIP}
+                      </h3>
+                      <p className="text-gray-600 mt-2">
+                        {currentProperty.travel_dist} | {currentProperty.duration_text} | ${currentProperty.RentPrice.toFixed(2)}/mo
+                      </p>
+                    </div>
+                  </InfoWindow>
+                </>
+              )}
 
-              <Marker position={{ lat: currentProperty.LAT, lng: currentProperty.LNG }} />
-              <InfoWindow position={{ lat: currentProperty.LAT, lng: currentProperty.LNG }}>
-                <h3 className="font-bold text-lg text-gray-800">
-                  {currentProperty.City}, {currentProperty.State} {currentProperty.ZIP}
-                </h3>
-                <p className="text-gray-600 mt-2">
-                  {currentProperty.travel_dist} | {currentProperty.duration_text} | ${currentProperty.RentPrice.toFixed(2)}/mo
-                </p>
-
-              </InfoWindow>
-
-              <Polyline
-                key={0}
-                strokeWeight={5}
-                strokeColor={'#ff0000'}
-                encodedPath={polystring}
-              />
+              {polystring && (
+                <Polyline
+                  strokeWeight={5}
+                  strokeColor={'#ff0000'}
+                  encodedPath={polystring}
+                />
+              )}
             </Map>
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
