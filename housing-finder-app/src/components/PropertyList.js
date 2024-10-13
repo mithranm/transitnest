@@ -2,13 +2,19 @@
 
 import React from 'react';
 
-const PropertyList = ({ properties }) => {
+const PropertyList = ({ properties, onClick }) => {
+
+  const clicked = (index) => {
+    onClick(index);
+  };
+
   return (
     <div className="space-y-4">
       {properties.map((property, index) => (
         <div 
-          key={index} 
+          key={index}
           className="border p-4 rounded shadow-sm hover:shadow-md transition-shadow bg-white"
+          onClick={() => clicked(index)}
         >
           <h3 className="font-bold text-lg text-gray-800">
             {property.City}, {property.State} {property.ZIP}
