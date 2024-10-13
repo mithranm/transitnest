@@ -82,8 +82,8 @@ ZIP_DATAFRAME['closest_metro_distances'] = distances
 ZIP_DATAFRAME['closest_station'] = closest_station
 ZIP_DATAFRAME['closest_station_addr'] = closest_station_addr
 
-def run_search_algorithm(budget: int,
-    dist_from_public_transport: int,
+def run_search_algorithm(budget: float,
+    dist_from_public_transport: float,
     work_zipcode: int) -> Dict:
     """
     Returns truncated property dataframe

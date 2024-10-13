@@ -25,8 +25,12 @@ const HousingFinderApp = () => {
   const handleSearch = (params) => {
     setLoading(true);
     setSearchParams(params);
-    // API call to fetch properties
-    fetch(`${process.env["REACT_APP_BACKEND_URL"]}/get_properties?${new URLSearchParams(searchParams)}`, {
+  
+    // Convert params to query string
+    const queryParams = new URLSearchParams(params).toString();
+  
+    // Use the queryParams in your fetch call
+    fetch(`${process.env["REACT_APP_BACKEND_URL"]}/get_properties?${queryParams}`, {
       method: "GET",
       headers: {
         'Content-Type': 'application/json',
@@ -35,11 +39,10 @@ const HousingFinderApp = () => {
     })
       .then(response => response.json())
       .then((data) => {
+        setLoading(false);
         if (data === "") {
-          setLoading(false);
           setProperties([]);
         } else {
-          setLoading(false);
           const json_data = JSON.parse(data);
           setProperties(json_data);
         }
@@ -49,7 +52,7 @@ const HousingFinderApp = () => {
         console.log(error);
       });
   };
-
+  
   const changePoly = (index) => {
     setCurrentProperty(properties[index]);
     setPolyString(properties[index].polyline);
@@ -117,7 +120,7 @@ const HousingFinderApp = () => {
           role: 'user',
           content: [
             {
-              text: 'Here is a screenshot of the application.',
+              text: 'Help me understand this screenshot of a Rental Locator Application called TransitNest.',
               image: {
                 format: 'png',
                 source: {

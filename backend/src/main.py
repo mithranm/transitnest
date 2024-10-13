@@ -114,42 +114,8 @@ class Message(BaseModel):
 class MultiPromptRequest(BaseModel):
     messages: List[Message]
 
-"""
-/house_search Endpoint
-Returns the best-ranking house based on user parameters.
-Expects a POST request with a JSON body:
-{
-    "budget": int,
-    "credit_score": int,
-    "dist_from_public_transport": int,
-    "length_of_loan": int,
-    "work_zipcode": int
-}
-"""
-@app.post("/house_search")
-def search(user_params: UserParameters):
-    # Extract parameters
-    budget = user_params.budget
-    credit_score = user_params.credit_score
-    dist = user_params.dist_from_public_transport
-    length_of_loan = user_params.length_of_loan
-    zipcode = user_params.work_zipcode
-
-    logger.info(f"Received search parameters: Budget={budget}, Distance={dist} miles, Zipcode={zipcode}, Credit Score={credit_score}, Loan Length={length_of_loan} years")
-
-    # TODO: Implement the logic to use LLM and return the best house
-    # Example placeholder response
-    best_house = {
-        "address": "123 Main St",
-        "price": budget - 10000,
-        "distance_from_transport": dist,
-        "zipcode": zipcode
-    }
-
-    return {"best_house": best_house}
-
 @app.get("/get_properties")
-def get_property_dataframe_json(budget=5000, creditScore=0, maxDistance=2, loanTerm=0, workZip=22030):
+def get_property_dataframe_json(budget=5000, maxDistance=2, workZip=22030):
     if budget=='':
         budget=5000
     if maxDistance=='':

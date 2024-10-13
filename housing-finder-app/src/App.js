@@ -194,7 +194,7 @@ function App() {
 
         {/* Footer */}
         <footer className="bg-gray-800 text-white p-4 text-center flex-shrink-0">
-          &copy; {new Date().getFullYear()} TransitNest. All rights reserved.
+          &copy; {new Date().getFullYear()} TransitNest
         </footer>
       </div>
     </Router>
