@@ -37,7 +37,6 @@ openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 boto3_client = boto3.client(
     "bedrock-runtime", config=boto3_config
 )
-azure_openai_client = OpenAI(api_key=os.environ["AZURE_KEY"], base_url="https://izdar.openai.azure.com/")
 perplexity_client = OpenAI(api_key=os.environ["PERPLEXITY_API_KEY"], base_url="https://api.perplexity.ai")
 BOTO3_MODEL_ID_VISION = "us.meta.llama3-2-11b-instruct-v1:0"
 BOTO3_MODEL_ID_CHAT =  "us.meta.llama3-2-3b-instruct-v1:0"
