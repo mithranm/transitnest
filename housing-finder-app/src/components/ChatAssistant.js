@@ -46,8 +46,8 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
           placeholder="Ask about the results..." 
           className="flex-grow p-2 border rounded-l" 
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded-r">
-          <Send size={20} />
+        <button type="submit" className="chat_button p-2 rounded-r">
+          <Send size={20} color="#FFFFFF"/>
         </button>
       </form>
     </div>
