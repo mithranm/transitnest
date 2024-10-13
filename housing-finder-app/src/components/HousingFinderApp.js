@@ -4,6 +4,7 @@ import SearchForm from './SearchForm';
 import PropertyList from './PropertyList';
 import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
+import ScreenshotCapture from './ScreenshotCapture';
 
 const google = window.google;
 
