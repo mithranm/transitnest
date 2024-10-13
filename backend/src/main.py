@@ -1,5 +1,7 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+# main.py
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import pandas as pd
@@ -8,95 +10,141 @@ from pandas_loader import load_data_from_csv
 import search_algorithm
 from typing import List, Dict, Any
 import logging
+import traceback
+import json  # Import json for serialization
 
+# Initialize FastAPI app
 app = FastAPI()
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],  # Consider restricting in production
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
+# Load environment variables
 load_dotenv()
 
-
+# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Load dataframes
 METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME = load_data_from_csv()
 
 """
 Requirements
-/house/search - this endpoint will use an llm with aggregated data as context to find the best house. (we choose model later)
-/graph/historic_price - this endpoint will create a gradio or streamlit embedded within our react page
+/house_search - This endpoint will use an LLM with aggregated data as context to find the best house. (Model choice pending)
+/graph/historic_price - This endpoint will create a Gradio or Streamlit app embedded within our React page
 """
 
+# Pydantic Models for /house_search
 class UserParameters(BaseModel):
     budget: int
     credit_score: int
-    dist_from_public_transport: int # will be in miles.
-    length_of_loan: int # will be in years.
+    dist_from_public_transport: int  # in miles
+    length_of_loan: int  # in years
     work_zipcode: int
+
+# Pydantic Models for /chat
+class ContentItem(BaseModel):
+    text: str
 
 class Message(BaseModel):
     role: str
-    content:List[Dict[str, str]]
+    content: List[ContentItem]
+
+    @validator('role')
+    def role_must_be_valid(cls, v):
+        if v not in {"user", "assistant"}:
+            raise ValueError('role must be either "user" or "assistant"')
+        return v
 
 class MultiPromptRequest(BaseModel):
     messages: List[Message]
 
 """
-This endpoint will return the best ranking house with the given parameters from the frontend.
-Frontend must form a POST request with the following json formatted body:
+/house_search Endpoint
+Returns the best-ranking house based on user parameters.
+Expects a POST request with a JSON body:
 {
     "budget": int,
     "credit_score": int,
     "dist_from_public_transport": int,
-    "length_of_loan": int
+    "length_of_loan": int,
+    "work_zipcode": int
 }
 """
-
 @app.post("/house_search")
 def search(user_params: UserParameters):
-    # Steps for this function.
-    budget: int = user_params.budget
-    dist: int = user_params.dist_from_public_transport
-    zipcode: int = user_params.work_zipcode 
-    # We want to be able to use these two variables to rank the best real estate options.
+    # Extract parameters
+    budget = user_params.budget
+    dist = user_params.dist_from_public_transport
+    zipcode = user_params.work_zipcode
+    credit_score = user_params.credit_score
+    length_of_loan = user_params.length_of_loan
 
-    credit_score: int = user_params.credit_score
-    length_of_loan: int = user_params.length_of_loan
+    logger.info(f"Received search parameters: Budget={budget}, Distance={dist} miles, Zipcode={zipcode}, Credit Score={credit_score}, Loan Length={length_of_loan} years")
 
-    print(f"budget {budget}, preferred distence from public transport: {dist}, work zipcode: {zipcode}, credit score: {credit_score}, length of loan {length_of_loan}") # ensuring all values are being received.
+    # TODO: Implement the logic to use LLM and return the best house
+    # Example placeholder response
+    best_house = {
+        "address": "123 Main St",
+        "price": budget - 10000,
+        "distance_from_transport": dist,
+        "zipcode": zipcode,
+        "credit_score_required": credit_score,
+        "loan_length": length_of_loan
+    }
 
-    # Pass in budget, dist, zipcode into llm to get the best real estate.
-
-    #response = chat_llm()
-    #print(response["body"].read()) # This is how to get the response from the llm.
-
-    pass
+    return {"best_house": best_house}
 
 @app.get("/get_properties")
 def get_property_dataframe_json():
     return search_algorithm.get_property_dataframe_json()
 
 @app.post("/chat")
-def chat(req: MultiPromptRequest):
-    response = multiturn_prompt_llm(req.messages)
+def chat(request: MultiPromptRequest):
+    try:
+        # Convert the Pydantic model to a dict
+        payload = request.dict()
 
-    print(response["output"])
+        # Log the received payload for debugging
+        logger.info(f"Received /chat payload: {payload}")
+
+        # Extract the 'messages' list
+        messages = payload.get('messages', [])
+        logger.info(f"Extracted messages: {messages}")
+
+        # Pass only the 'messages' list to the LLM function
+        response = multiturn_prompt_llm(messages)
+
+        # Log the LLM response
+        logger.info(f"LLM Response: {response}")
+
+        # Extract the 'output' field
+        output = response.get("output", "Sorry, I couldn't process your request.")
+
+        # Wrap the output in a message structure
+        assistant_message = {
+            "role": "assistant",
+            "content": [{"text": output['message']['content'][0]['text']}]
+        }
+
+        # Return the message object
+        return {"message": assistant_message}
+    except Exception as e:
+        logger.error(f"Error processing /chat request: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.get("/graph_historic_price")
 def get_historic_price():
-
-
-    # Code here (mithran)
-
-    pass
-
+    # TODO: Implement the historic price graph functionality
+    return {"message": "Historic price graph functionality not yet implemented."}
 
 if __name__ == "__main__":
-    print(METRO_DATAFRAME["X"])
+    logger.info(f"Metro DataFrame 'X' column: {METRO_DATAFRAME['X']}")

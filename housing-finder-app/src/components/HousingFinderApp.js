@@ -29,7 +29,7 @@ const HousingFinderApp = () => {
      }}).then(response => response.json()).then((data) => {
       var json_data = JSON.parse(data);
       setProperties(json_data);
-      setChatMessages([{ text: json_data, sender: 'user' }]);
+      setChatMessages([...chatMessages, { text: json_data, sender: 'user' }]);
     }).catch((error) => console.log(error));
 
     setPolyString('ilrlF`ultMn@HZJPN^d@~@z@X\\d@x@JjA@t@?ZYAAP\\@L??D?OdAAnCEfAApBCxGIpB?fAJZFn@Rh@VZTTV^j@d@h@RRd@Xh@T|@Nl@@lAElAGp@?b@DlAXbCv@|@`@d@\\`@b@h@n@^j@LQHC^Gb@CJ?l@QbCoAn@[NKl@k@r@?RB`@b@h@rB{C|AMJEHARFVHHJ?j@STKBJCKUJFP_A`@F`@aAXCMID_Is]oBwHsAgE{AcEcB}DiBwDgBcD_CuDyMwRqA_BsAyAqUiTqKmKsCkDsCeEiF}In@w@o@v@[e@cOkVk]}k@{BkDeCeDaLaNyHaKkKcMIJuB^[kBFMk@o@wA_BsEgFyBwBwBgBeAu@qHyEqGaE_HaEeEkCwE}C{C{BqAeAoBgBgAiA}DoEkHqIaGgH}G_IgEiFu@eAqB{CwAgCcBiDmD_IwEuKyCiH}JyUc[ut@qt@eeBk[eu@eKgVaIeRwBeFwDmIiJ_SkRka@_Wmi@iFaLyA_Du@eBmCeGgCqFaGkMmHmOoA}BmB{Cw@mAyF{HaHoJsCaEgDoEmDmEeAmAsFgGiCeCcEoDeF_EaD{BgFgDyEaDkK_H{CqBsLcIuE{C{HkFyCwByAgAwAsAeB_BeB_BsCuCgO{O}HmIeC{CyDyEiIkKgEeFs@_AuAsAoAmA_CgB}BuA}BkA}@]{Bu@{Bi@kAWeNuBwIuAwCs@mDeA}CoA{DoByEqCcHkEuFkDoEqCmX{Pw@c@kBoAwDkC{BiB{CuCo@q@kCsCqCmDg@w@eA{AgF}HsCoEq@aA}BkDcEkGyXcb@iDcFwBqCkBwBsCqCmC{BkCkBeDqBiB_AaLiFiD_BKk@Lm@hBgIfAaHv@kCx@gBj@_ALOyBwBAAf@_CH_@kFeBi@Q]@_@BUFi@XwBjEQQOMCF{@e@WM');
@@ -37,32 +37,51 @@ const HousingFinderApp = () => {
   };
 
   const handleChatMessage = (message) => {
-    setChatMessages([...chatMessages, { role: "user", content: [{text: message}] }]);
-    // gotta format to this json.
-    //   {
-    //     "messages": [    
-    //         {
-    //             "role": "user",
-    //             "content": [
-    //                 {                
-    //                     "text": "hi"
-    //                 }
-    //             ]
-    //         }
-    //     ]
-    // }
-    let payload = {
-      messages: chatMessages
-    }
+    const newUserMessage = { role: "user", content: [{ text: message }] };
+    const updatedChatMessages = [...chatMessages, newUserMessage];
+    setChatMessages(updatedChatMessages);
 
-    console.log(JSON.stringify(payload));
-    fetch("http://localhost:8000/chat", {method: "POST", header: {"Content-Type": "application/json"}, body: JSON.stringify(payload)})
-    .then(response => response.json()).then((data) => {
-      console.log(data);
+    // Prepare payload as per backend expectation
+    const payload = {
+      messages: updatedChatMessages
+    };
+
+    console.log('Sending payload to /chat:', JSON.stringify(payload, null, 2));
+
+    fetch("http://localhost:8000/chat", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log('Received response from /chat:', data);
+      if (data.message) {
+        // Ensure data.message is a valid message object
+        if (
+          data.message.role &&
+          Array.isArray(data.message.content) &&
+          typeof data.message.content[0].text === 'string'
+        ) {
+          const newAssistantMessage = data.message;
+          setChatMessages([...updatedChatMessages, newAssistantMessage]);
+        } else {
+          console.warn('Unexpected message format:', data.message);
+        }
+      } else {
+        console.warn('No message field in response:', data);
+      }
     })
     .catch((error) => {
-      console.error(error);
-    })
+      console.error('Error communicating with /chat:', error);
+    });
   };
 
   return (
