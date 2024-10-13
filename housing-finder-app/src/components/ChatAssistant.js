@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const ChatAssistant = ({ messages, onSendMessage, isThinking }) => {
   const [input, setInput] = React.useState('');
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,6 +75,7 @@ const ChatAssistant = ({ messages, onSendMessage, isThinking }) => {
         {isThinking && (
           <p className="text-gray-500 italic">Thinking...</p>
         )}
+        <div ref={messagesEndRef} />
       </div>
       
       {/* Input Form */}
