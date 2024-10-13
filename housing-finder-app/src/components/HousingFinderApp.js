@@ -23,13 +23,18 @@ const HousingFinderApp = () => {
     setSearchParams(params);
     // Here you would typically make an API call to fetch properties
     // For now, we'll just set a dummy property
-    fetch('http://localhost:8000/get_properties', {method: "GET", headers : { 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-     }}).then(response => response.json()).then((data) => {
-      var json_data = JSON.parse(data);
-      setProperties(json_data);
-      setChatMessages([...chatMessages, { text: json_data, sender: 'user' }]);
+    fetch(`http://localhost:8000/get_properties?${new URLSearchParams(params)}`, {
+      method: "GET", headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }).then(response => response.json()).then((data) => {
+      if (data === "") {
+        setProperties([]);
+      } else {
+        var json_data = JSON.parse(data);
+        setProperties(json_data);
+      }
     }).catch((error) => console.log(error));
 
     setPolyString('ilrlF`ultMn@HZJPN^d@~@z@X\\d@x@JjA@t@?ZYAAP\\@L??D?OdAAnCEfAApBCxGIpB?fAJZFn@Rh@VZTTV^j@d@h@RRd@Xh@T|@Nl@@lAElAGp@?b@DlAXbCv@|@`@d@\\`@b@h@n@^j@LQHC^Gb@CJ?l@QbCoAn@[NKl@k@r@?RB`@b@h@rB{C|AMJEHARFVHHJ?j@STKBJCKUJFP_A`@F`@aAXCMID_Is]oBwHsAgE{AcEcB}DiBwDgBcD_CuDyMwRqA_BsAyAqUiTqKmKsCkDsCeEiF}In@w@o@v@[e@cOkVk]}k@{BkDeCeDaLaNyHaKkKcMIJuB^[kBFMk@o@wA_BsEgFyBwBwBgBeAu@qHyEqGaE_HaEeEkCwE}C{C{BqAeAoBgBgAiA}DoEkHqIaGgH}G_IgEiFu@eAqB{CwAgCcBiDmD_IwEuKyCiH}JyUc[ut@qt@eeBk[eu@eKgVaIeRwBeFwDmIiJ_SkRka@_Wmi@iFaLyA_Du@eBmCeGgCqFaGkMmHmOoA}BmB{Cw@mAyF{HaHoJsCaEgDoEmDmEeAmAsFgGiCeCcEoDeF_EaD{BgFgDyEaDkK_H{CqBsLcIuE{C{HkFyCwByAgAwAsAeB_BeB_BsCuCgO{O}HmIeC{CyDyEiIkKgEeFs@_AuAsAoAmA_CgB}BuA}BkA}@]{Bu@{Bi@kAWeNuBwIuAwCs@mDeA}CoA{DoByEqCcHkEuFkDoEqCmX{Pw@c@kBoAwDkC{BiB{CuCo@q@kCsCqCmDg@w@eA{AgF}HsCoEq@aA}BkDcEkGyXcb@iDcFwBqCkBwBsCqCmC{BkCkBeDqBiB_AaLiFiD_BKk@Lm@hBgIfAaHv@kCx@gBj@_ALOyBwBAAf@_CH_@kFeBi@Q]@_@BUFi@XwBjEQQOMCF{@e@WM');
@@ -107,11 +112,16 @@ const HousingFinderApp = () => {
               gestureHandling={'greedy'}
               disableDefaultUI={false}
             >
-              <Polyline
-                strokeWeight={10}
-                strokeColor={'#ff22cc88'}
-                encodedPath={polystring}
-              />
+              {properties.map(property => (
+                <Marker position={{ lat: property.LAT, lng: property.LNG }} />
+              ))}
+              {properties.slice(0).reverse().map(property => (
+                <Polyline
+                  strokeWeight={5}
+                  strokeColor={property.color}
+                  encodedPath={property.polyline}
+                />
+              ))}
 
             </Map>
           </APIProvider>
