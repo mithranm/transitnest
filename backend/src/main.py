@@ -1,6 +1,6 @@
 # main.py
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -13,8 +13,13 @@ import logging
 import traceback
 import json  # Import json for serialization
 
+from rate_limiter import RateLimiter  # Import the RateLimiter class
+
 # Initialize FastAPI app
 app = FastAPI()
+
+# Initialize the RateLimiter
+rate_limiter = RateLimiter()
 
 # Configure CORS
 app.add_middleware(
@@ -44,9 +49,7 @@ Requirements
 # Pydantic Models for /house_search
 class UserParameters(BaseModel):
     budget: int
-    credit_score: int
     dist_from_public_transport: int  # in miles
-    length_of_loan: int  # in years
     work_zipcode: int
 
 # Pydantic Models for /chat
@@ -79,7 +82,8 @@ Expects a POST request with a JSON body:
 }
 """
 @app.post("/house_search")
-def search(user_params: UserParameters):
+@rate_limiter.limit(limit=10, window=60)  # Limit to 10 requests per minute per IP
+async def search(user_params: UserParameters, request: Request):
     # Extract parameters
     budget = user_params.budget
     dist = user_params.dist_from_public_transport
@@ -103,23 +107,33 @@ def search(user_params: UserParameters):
     return {"best_house": best_house}
 
 @app.get("/get_properties")
-def get_property_dataframe_json(budget=5000, creditScore=0, maxDistance=2, loanTerm=0, workZip=22030):
-    if budget=='':
-        budget=5000
-    if creditScore=='':
-        creditScore=0
-    if maxDistance=='':
-        maxDistance=2
-    if loanTerm=='':
-        loanTerm=0
-    if workZip=='':
-        workZip=22030
+@rate_limiter.limit(limit=20, window=60)  # Limit to 20 requests per minute per IP
+async def get_property_dataframe_json(
+    request: Request,
+    budget: float = 5000,
+    creditScore: int = 0,
+    maxDistance: float = 2,
+    loanTerm: int = 0,
+    workZip: int = 22030
+):
+    # Validate and set default values if necessary
+    if budget == '':
+        budget = 5000
+    if creditScore == '':
+        creditScore = 0
+    if maxDistance == '':
+        maxDistance = 2
+    if loanTerm == '':
+        loanTerm = 0
+    if workZip == '':
+        workZip = 22030
 
     output = search_algorithm.run_search_algorithm(float(budget), float(maxDistance), int(workZip))
     return output
 
 @app.post("/chat")
-def chat(request: MultiPromptRequest):
+@rate_limiter.limit(limit=30, window=60)  # Limit to 30 requests per minute per IP
+async def chat(request: MultiPromptRequest, req: Request):
     try:
         # Convert the Pydantic model to a dict
         payload = request.dict()
@@ -154,15 +168,15 @@ def chat(request: MultiPromptRequest):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.get("/graph_historic_price")
-def get_historic_price():
+@rate_limiter.limit(limit=5, window=60)  # Limit to 5 requests per minute per IP
+async def get_historic_price(request: Request):
     # TODO: Implement the historic price graph functionality
     return {"message": "Historic price graph functionality not yet implemented."}
 
-    
 @app.get("/")
-def health():
+@rate_limiter.limit(limit=60, window=60)  # Limit to 60 requests per minute per IP
+async def health(request: Request):
     return {"message": "healthy"}
-    
 
 if __name__ == "__main__":
     logger.info(f"Metro DataFrame 'X' column: {METRO_DATAFRAME['X']}")
