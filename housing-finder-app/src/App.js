@@ -25,7 +25,7 @@ const About = () => (
 function App() {
   return (
     <Router>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full font-serif['Roboto']">
         {/* Header */}
         <header className="bg-gray-800 text-white p-4 flex-shrink-0">
           <h1 className="text-3xl font-bold text-left">TransitNest</h1>
