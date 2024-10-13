@@ -6,6 +6,10 @@ import googlemaps
 from datetime import datetime, timedelta
 import random
 from tqdm import tqdm
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def generate_random_color():
   """Generates a random hex color code."""
@@ -17,7 +21,7 @@ def generate_random_color():
   return f"#{r:02x}{g:02x}{b:02x}"
 
 
-gmaps = googlemaps.Client(key='AIzaSyD1wcWfl4xLR_X9_vLsLauWdbT8BG5Iumg')
+gmaps = googlemaps.Client(key=os.environ["MAP_API_KEY"])
 
 METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME = load_data_from_csv()
 # METRO COLUMNS
