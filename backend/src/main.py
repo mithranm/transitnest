@@ -1,18 +1,19 @@
 # main.py
 
 from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, model_validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import pandas as pd
 from prompt_library import multiturn_prompt_llm
 from pandas_loader import load_data_from_csv
 import search_algorithm
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import logging
 import traceback
 import json  # Import json for serialization
 from rate_limiter import RateLimitMiddleware  # Import the middleware
+import base64
 
 # Initialize FastAPI app
 
@@ -56,10 +57,27 @@ class UserParameters(BaseModel):
     budget: int
     credit_score: int
     dist_from_public_transport: int
+    length_of_loan: int
+    work_zipcode: int
 
 # Pydantic Models for /chat
+
+class ImageSource(BaseModel):
+    bytes: str
+
+class ImageContent(BaseModel):
+    format: str
+    source: ImageSource
+
 class ContentItem(BaseModel):
-    text: str
+    text: Optional[str] = None
+    image: Optional[ImageContent] = None
+
+    @model_validator(mode='after')
+    def at_least_one_field_must_be_set(cls, model):
+        if not model.text and not model.image:
+            raise ValueError('At least one of "text" or "image" must be provided in ContentItem')
+        return model
 
 class Message(BaseModel):
     role: str
@@ -68,7 +86,7 @@ class Message(BaseModel):
     @validator('role')
     def role_must_be_valid(cls, v):
         if v not in {"user", "assistant"}:
-            raise ValueError('role must be either "user" or "assistant"')
+            raise ValueError('Role must be either "user" or "assistant"')
         return v
 
 class MultiPromptRequest(BaseModel):
@@ -90,7 +108,9 @@ Expects a POST request with a JSON body:
 def search(user_params: UserParameters):
     # Extract parameters
     budget = user_params.budget
+    credit_score = user_params.credit_score
     dist = user_params.dist_from_public_transport
+    length_of_loan = user_params.length_of_loan
     zipcode = user_params.work_zipcode
 
     logger.info(f"Received search parameters: Budget={budget}, Distance={dist} miles, Zipcode={zipcode}, Credit Score={credit_score}, Loan Length={length_of_loan} years")
@@ -122,7 +142,7 @@ def get_property_dataframe_json(budget=5000, creditScore=0, maxDistance=2, loanT
 def chat(request: MultiPromptRequest):
     try:
         # Convert the Pydantic model to a dict
-        payload = request.dict()
+        payload = request.model_dump()
 
         # Log the received payload for debugging
         logger.info(f"Received /chat payload: {payload}")
@@ -131,8 +151,33 @@ def chat(request: MultiPromptRequest):
         messages = payload.get('messages', [])
         logger.info(f"Extracted messages: {messages}")
 
-        # Pass only the 'messages' list to the LLM function
-        response = multiturn_prompt_llm(messages)
+        # Process messages, handling images
+        processed_messages = []
+        for message in messages:
+            role = message['role']
+            content_list = message['content']
+            processed_content_list = []
+            for content_item in content_list:
+                if 'text' in content_item and content_item['text'] is not None:
+                    processed_content_list.append({'text': content_item['text']})
+                elif 'image' in content_item and content_item['image'] is not None:
+                    image_content = content_item['image']
+                    image_format = image_content['format']
+                    image_bytes = image_content['source']['bytes']
+                    # Decode the base64 image data
+                    image_data = base64.b64decode(image_bytes)
+                    # Here, you can save or process the image_data as needed
+                    # For the LLM, you might include a placeholder text
+                    processed_content_list.append({'text': '[Image received]'})
+                else:
+                    # Handle invalid content item
+                    logger.warning(f"Invalid content item: {content_item}")
+            processed_messages.append({'role': role, 'content': processed_content_list})
+
+        logger.info(f"Processed messages for LLM: {processed_messages}")
+
+        # Pass the processed messages to the LLM function
+        response = multiturn_prompt_llm(processed_messages)
 
         # Log the LLM response
         logger.info(f"LLM Response: {response}")
@@ -143,7 +188,7 @@ def chat(request: MultiPromptRequest):
         # Wrap the output in a message structure
         assistant_message = {
             "role": "assistant",
-            "content": [{"text": output['message']['content'][0]['text']}]
+            "content": [{"text": output}]
         }
 
         # Return the message object
@@ -158,11 +203,9 @@ def get_historic_price():
     # TODO: Implement the historic price graph functionality
     return {"message": "Historic price graph functionality not yet implemented."}
 
-    
 @app.get("/")
 def health():
     return {"message": "healthy"}
-    
 
 if __name__ == "__main__":
     logger.info(f"Metro DataFrame 'X' column: {METRO_DATAFRAME['X']}")
