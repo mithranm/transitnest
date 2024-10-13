@@ -239,7 +239,7 @@ def query_perplexity(chat_history):
     messages = [
             {
                 "role": "system",
-                "content": "An offline LLM needs more information to answer the User's query. You are given the entire chat history."
+                "content": "An offline LLM needs more information to answer the User's query. You are given the entire chat history. Do not reference the chat history, just provide information related to it."
             },
             {
                 "role": "user",
@@ -278,7 +278,7 @@ def smart_multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     
     is_relevant_response = openai_client.chat.completions.create(model="gpt-4o-mini", messages=
         create_messages_for_classification(
-            "Classify the GIVEN TEXT as related rental properties or evaluating an area of living? Do not be too strict and greetings like Hello should be given a YES. STRICTLY RESPOND WITH YES OR NO",
+            "Classify the GIVEN TEXT as related to the process of evaluating a place to live. Do not be too strict and greetings like Hello should be given a YES. STRICTLY RESPOND WITH YES OR NO",
             user_prompt
         )
     )
@@ -301,11 +301,12 @@ def smart_multiturn_prompt_llm(messages: List[Dict[str, Any]]) -> Dict:
     internet_needed_response_raw = multiturn_prompt_llm(messages)
     needs_info_response = openai_client.chat.completions.create(model="gpt-4o-mini", messages=
         create_messages_for_classification(
-            "Does this LLM response indicate it needs more information to answer the prompt, such as information from the internet? STRICTLY RESPOND WITH YES OR NO",
-            internet_needed_response_raw['output']['message']['content'][0]['text']
+            "Would this prompt benefit from extra information to answer the prompt, such as information from the internet? For example, greetings do not need extra info.\nSTRICTLY RESPOND WITH YES OR NO",
+            user_prompt
         )
     )
     needs_info = "yes" in needs_info_response.choices[0].message.content.lower()
+    needs_info = True
     if needs_info:
         messages.append(
                 {
