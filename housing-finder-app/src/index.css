@@ -84,3 +84,8 @@ code {
   background: #1d6fa3;
   padding: 10px;
 }
+
+.labels{
+  -webkit-text-fill-color: white;
+  margin: auto;
+}
