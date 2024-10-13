@@ -1,7 +1,6 @@
-// src/components/ChatAssistant.js
-
 import React from 'react';
 import { Send } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const ChatAssistant = ({ messages, onSendMessage, isThinking }) => {
   const [input, setInput] = React.useState('');
@@ -19,7 +18,6 @@ const ChatAssistant = ({ messages, onSendMessage, isThinking }) => {
       {/* Messages Display */}
       <div className="flex-1 bg-gray-100 p-4 rounded-lg mb-4 overflow-y-auto">
         {messages.map((message, index) => {
-          // Ensure that content and text exist and are strings
           if (
             message.content &&
             Array.isArray(message.content) &&
@@ -27,24 +25,46 @@ const ChatAssistant = ({ messages, onSendMessage, isThinking }) => {
             typeof message.content[0].text === 'string'
           ) {
             return (
-              <p
+              <div
                 key={index}
-                className={`mb-2 ${
-                  message.role === 'assistant' ? 'font-bold text-gray-800' : 'text-gray-800'
-                }`}
+                className={`mb-4 ${
+                  message.role === 'assistant' ? 'bg-white' : 'bg-blue-100'
+                } p-3 rounded-lg`}
               >
-                {message.role === 'assistant' ? 'Assistant: ' : 'You: '}
-                {message.content[0].text}
-              </p>
+                <p className={`font-bold mb-2 ${
+                  message.role === 'assistant' ? 'text-gray-800' : 'text-blue-800'
+                }`}>
+                  {message.role === 'assistant' ? 'Assistant' : 'You'}
+                </p>
+                <ReactMarkdown 
+                  className="prose max-w-none"
+                  components={{
+                    h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-3 mb-2" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
+                    h4: ({node, ...props}) => <h4 className="text-base font-bold mt-2 mb-1" {...props} />,
+                    h5: ({node, ...props}) => <h5 className="text-sm font-bold mt-1 mb-1" {...props} />,
+                    h6: ({node, ...props}) => <h6 className="text-xs font-bold mt-1 mb-1" {...props} />,
+                    code({node, inline, className, children, ...props}) {
+                      return (
+                        <code className={`${inline ? 'bg-gray-200 rounded px-1' : 'block bg-gray-800 text-white p-2 rounded'} ${className}`} {...props}>
+                          {children}
+                        </code>
+                      )
+                    }
+                  }}
+                >
+                  {message.content[0].text}
+                </ReactMarkdown>
+              </div>
             );
           } else {
-            // Log a warning if the message structure is unexpected
             console.warn(`Unexpected message structure at index ${index}:`, message);
-            return null; // Or render a fallback UI element
+            return null;
           }
         })}
         {isThinking && (
-          <p>Thinking...</p>
+          <p className="text-gray-500 italic">Thinking...</p>
         )}
       </div>
       

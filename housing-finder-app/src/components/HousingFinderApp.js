@@ -45,6 +45,24 @@ const HousingFinderApp = () => {
         } else {
           const json_data = JSON.parse(data);
           setProperties(json_data);
+          
+          // Format the search results as a user message
+          const formattedResults = json_data.map((property, index) => 
+            `Property ${index + 1}: ${property.City}, ${property.State} ${property.ZIP} | ${property.travel_dist} | ${property.duration_text} | $${property.RentPrice.toFixed(2)}/mo`
+          ).join('\n');
+          
+          const userMessage = {
+            role: "user",
+            content: [{ text: `Search Results:\n${formattedResults}` }]
+          };
+          
+          const assistantMessage = {
+            role: "assistant",
+            content: [{ text: "I'm here to help you interpret these results, ask away!" }]
+          };
+          
+          // Set the chat messages with the formatted results and initial assistant response
+          setChatMessages([userMessage, assistantMessage]);
         }
       })
       .catch((error) => {

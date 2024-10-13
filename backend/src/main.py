@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator, model_validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import pandas as pd
-from prompt_library import multiturn_prompt_llm
+from prompt_library import smart_multiturn_prompt_llm
 from pandas_loader import load_data_from_csv
 import search_algorithm
 from typing import List, Dict, Any, Optional
@@ -187,7 +187,7 @@ def chat(request: MultiPromptRequest):
         logger.info(f"Processed messages for LLM: {processed_messages}")
 
         # Pass the processed messages to the LLM function
-        response = multiturn_prompt_llm(processed_messages)
+        response = smart_multiturn_prompt_llm(processed_messages)
 
         # Log the LLM response
         logger.info(f"LLM Response: {response}")

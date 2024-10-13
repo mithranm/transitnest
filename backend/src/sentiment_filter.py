@@ -19,7 +19,7 @@ class SentimentBasedFilter:
 
     def is_clean(self, text):
         score = self.analyze_text(text)
-        return score > -0.4, score
+        return score > -0.5, score
 
 # Example usage
 if __name__ == "__main__":
