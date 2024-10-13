@@ -3,7 +3,7 @@
 import React from 'react';
 import { Send } from 'lucide-react';
 
-const ChatAssistant = ({ messages, onSendMessage }) => {
+const ChatAssistant = ({ messages, onSendMessage, isThinking }) => {
   const [input, setInput] = React.useState('');
 
   const handleSubmit = (e) => {
@@ -30,7 +30,7 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
               <p
                 key={index}
                 className={`mb-2 ${
-                  message.role === 'assistant' ? 'font-bold text-blue-600' : 'text-gray-800'
+                  message.role === 'assistant' ? 'font-bold text-gray-800' : 'text-gray-800'
                 }`}
               >
                 {message.role === 'assistant' ? 'Assistant: ' : 'You: '}
@@ -43,6 +43,9 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
             return null; // Or render a fallback UI element
           }
         })}
+        {isThinking && (
+          <p>Thinking...</p>
+        )}
       </div>
       
       {/* Input Form */}
@@ -57,10 +60,10 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
         <button
           type="submit"
           className="
-            bg-indigo-800 text-white 
+            bg-gray-800 text-white 
             p-2 
             rounded-r-md 
-            hover:bg-indigo-700 
+            hover:bg-cyan-800 
             transition-colors duration-200 
             flex items-center justify-center
           "

@@ -18,6 +18,7 @@ const HousingFinderApp = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [polystring, setPolyString] = useState([]);
   const [isLoading, setLoading] = useState(false);
+  const [isThinking, setThinking] = useState(false);
 
   const handleSearch = (params) => {
     setLoading(true);
@@ -50,6 +51,7 @@ const HousingFinderApp = () => {
   };
 
   const handleChatMessage = (message) => {
+    setThinking(true);
     const newUserMessage = { role: "user", content: [{ text: message }] };
     const updatedChatMessages = [...chatMessages, newUserMessage];
     setChatMessages(updatedChatMessages);
@@ -70,11 +72,13 @@ const HousingFinderApp = () => {
     })
       .then(response => {
         if (!response.ok) {
+          setThinking(false);
           throw new Error(`Error: ${response.statusText}`);
         }
         return response.json();
       })
       .then((data) => {
+        setThinking(false);
         console.log('Received response from /chat:', data);
         if (data.message) {
           // Ensure data.message is a valid message object
@@ -93,6 +97,7 @@ const HousingFinderApp = () => {
         }
       })
       .catch((error) => {
+        setThinking(false);
         console.error('Error communicating with /chat:', error);
       });
   };
@@ -114,7 +119,7 @@ const HousingFinderApp = () => {
             </div>
             {/* Chat Assistant */}
             <div className="flex-shrink-0 p-4 max-h-[300px] overflow-y-auto border-t border-gray-200">
-              <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} />
+              <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} isThinking={isThinking} />
             </div>
           </div>
         </div>
