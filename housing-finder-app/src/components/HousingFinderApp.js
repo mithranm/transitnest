@@ -10,9 +10,7 @@ const google = window.google;
 const HousingFinderApp = () => {
   const [searchParams, setSearchParams] = useState({
     budget: '',
-    creditScore: '',
     maxDistance: '',
-    loanTerm: '',
     workZip: ''
   });
   const [properties, setProperties] = useState([]);
@@ -23,7 +21,7 @@ const HousingFinderApp = () => {
     setSearchParams(params);
     // Here you would typically make an API call to fetch properties
     // For now, we'll just set a dummy property
-    fetch(`http://localhost:8000/get_properties?${new URLSearchParams(params)}`, {
+    fetch(`http://34.85.173.23/get_properties?${new URLSearchParams(params)}`, {
       method: "GET", headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -53,7 +51,7 @@ const HousingFinderApp = () => {
 
     console.log('Sending payload to /chat:', JSON.stringify(payload, null, 2));
 
-    fetch("http://localhost:8000/chat", {
+    fetch("http://34.85.173.23/chat", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json"
