@@ -188,7 +188,7 @@ def chat(request: MultiPromptRequest):
         # Wrap the output in a message structure
         assistant_message = {
             "role": "assistant",
-            "content": [{"text": output}]
+            "content": [{"text": output['message']['content'][0]['text']}]
         }
 
         # Return the message object
