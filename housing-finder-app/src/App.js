@@ -24,7 +24,7 @@ function App() {
       <div className="App">
         <header className="bg-gray-800 text-white p-4">
           <h1 className="text-2xl font-bold text-center">Perspire</h1>
-          <nav className="mt-4">
+          <nav className="mt-1">
             <ul className="flex justify-center space-x-4">
               <li><Link to="/" className="hover:text-gray-300">Home</Link></li>
               <li><Link to="/TransitNest" className="hover:text-gray-300">TransitNest</Link></li>

@@ -4,7 +4,6 @@ import SearchForm from './SearchForm';
 import PropertyList from './PropertyList';
 import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
-import ScreenshotCapture from './ScreenshotCapture';
 
 const google = window.google;
 
@@ -38,7 +37,7 @@ const HousingFinderApp = () => {
       }
     }).catch((error) => console.log(error));
 
-    setPolyString('ilrlF`ultMn@HZJPN^d@~@z@X\\d@x@JjA@t@?ZYAAP\\@L??D?OdAAnCEfAApBCxGIpB?fAJZFn@Rh@VZTTV^j@d@h@RRd@Xh@T|@Nl@@lAElAGp@?b@DlAXbCv@|@`@d@\\`@b@h@n@^j@LQHC^Gb@CJ?l@QbCoAn@[NKl@k@r@?RB`@b@h@rB{C|AMJEHARFVHHJ?j@STKBJCKUJFP_A`@F`@aAXCMID_Is]oBwHsAgE{AcEcB}DiBwDgBcD_CuDyMwRqA_BsAyAqUiTqKmKsCkDsCeEiF}In@w@o@v@[e@cOkVk]}k@{BkDeCeDaLaNyHaKkKcMIJuB^[kBFMk@o@wA_BsEgFyBwBwBgBeAu@qHyEqGaE_HaEeEkCwE}C{C{BqAeAoBgBgAiA}DoEkHqIaGgH}G_IgEiFu@eAqB{CwAgCcBiDmD_IwEuKyCiH}JyUc[ut@qt@eeBk[eu@eKgVaIeRwBeFwDmIiJ_SkRka@_Wmi@iFaLyA_Du@eBmCeGgCqFaGkMmHmOoA}BmB{Cw@mAyF{HaHoJsCaEgDoEmDmEeAmAsFgGiCeCcEoDeF_EaD{BgFgDyEaDkK_H{CqBsLcIuE{C{HkFyCwByAgAwAsAeB_BeB_BsCuCgO{O}HmIeC{CyDyEiIkKgEeFs@_AuAsAoAmA_CgB}BuA}BkA}@]{Bu@{Bi@kAWeNuBwIuAwCs@mDeA}CoA{DoByEqCcHkEuFkDoEqCmX{Pw@c@kBoAwDkC{BiB{CuCo@q@kCsCqCmDg@w@eA{AgF}HsCoEq@aA}BkDcEkGyXcb@iDcFwBqCkBwBsCqCmC{BkCkBeDqBiB_AaLiFiD_BKk@Lm@hBgIfAaHv@kCx@gBj@_ALOyBwBAAf@_CH_@kFeBi@Q]@_@BUFi@XwBjEQQOMCF{@e@WM');
+    setPolyString(polystring);
 
   };
 
@@ -93,33 +92,36 @@ const HousingFinderApp = () => {
   return (
     <div className="flex flex-col h-screen">
       <main className="flex flex-1 overflow-hidden">
-        <div className="w-1/3 flex flex-col">
-          <div className="p-4 overflow-y-auto flex-grow">
+        <div className="w-1/3 flex flex-col h-full">
+          <div className="flex-grow overflow-y-auto p-4">
             <SearchForm onSearch={handleSearch} />
             <PropertyList properties={properties} />
           </div>
-          <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} />
+          <div className="h-1/3 min-h-[200px] overflow-y-auto">
+            <ChatAssistant messages={chatMessages} onSendMessage={handleChatMessage} />
+          </div>
         </div>
 
-        <div className="w-2/3 bg-gray-200 flex items-center justify-center">
+        <div className="w-2/3 h-full">
           <APIProvider apiKey={process.env.REACT_APP_MAP_API_KEY}>
             <Map
+              style={{ width: '100%', height: '100%' }}
               defaultCenter={{ lat: 38.897615111606, lng: -77.03526739437355 }}
               defaultZoom={10}
               gestureHandling={'greedy'}
               disableDefaultUI={false}
             >
-              {properties.map(property => (
-                <Marker position={{ lat: property.LAT, lng: property.LNG }} />
+              {properties.map((property, index) => (
+                <Marker key={index} position={{ lat: property.LAT, lng: property.LNG }} />
               ))}
-              {properties.slice(0).reverse().map(property => (
+              {properties.slice(0).reverse().map((property, index) => (
                 <Polyline
+                  key={index}
                   strokeWeight={5}
                   strokeColor={property.color}
                   encodedPath={property.polyline}
                 />
               ))}
-
             </Map>
           </APIProvider>
         </div>
