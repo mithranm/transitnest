@@ -14,6 +14,10 @@ import traceback
 import json  # Import json for serialization
 from rate_limiter import RateLimitMiddleware  # Import the middleware
 import base64
+from logging.handlers import RotatingFileHandler
+from PIL import Image
+from io import BytesIO
+
 
 # Initialize FastAPI app
 
@@ -42,6 +46,24 @@ load_dotenv()
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Create formatters
+file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# File handler (with rotation)
+file_handler = RotatingFileHandler('app.log', maxBytes=10*1024*1024, backupCount=5)  # 10MB per file, keep 5 backups
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(file_formatter)
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(console_formatter)
+
+# Add handlers to logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 # Load dataframes
 METRO_DATAFRAME, PROPERTY_DATAFRAME, ZIP_DATAFRAME = load_data_from_csv()
@@ -138,6 +160,20 @@ def get_property_dataframe_json(budget=5000, creditScore=0, maxDistance=2, loanT
     output = search_algorithm.run_search_algorithm(float(budget), float(maxDistance), int(workZip))
     return output
 
+def scale_image(image_bytes, max_size=(1000, 1000)):
+    # Open the image from bytes
+    img = Image.open(BytesIO(image_bytes))
+    
+    # Resize the image
+    img.thumbnail(max_size)
+    
+    # Save the resized image to bytes
+    output_buffer = BytesIO()
+    img.save(output_buffer, format=img.format)
+    
+    # Return the bytes of the scaled image
+    return output_buffer.getvalue()
+
 @app.post("/chat")
 def chat(request: MultiPromptRequest):
     try:
@@ -160,15 +196,23 @@ def chat(request: MultiPromptRequest):
             for content_item in content_list:
                 if 'text' in content_item and content_item['text'] is not None:
                     processed_content_list.append({'text': content_item['text']})
-                elif 'image' in content_item and content_item['image'] is not None:
+                if 'image' in content_item and content_item['image'] is not None:
                     image_content = content_item['image']
-                    image_format = image_content['format']
+                    logger.info(f"yada yada {image_content}")
                     image_bytes = image_content['source']['bytes']
                     # Decode the base64 image data
                     image_data = base64.b64decode(image_bytes)
-                    # Here, you can save or process the image_data as needed
-                    # For the LLM, you might include a placeholder text
-                    processed_content_list.append({'text': '[Image received]'})
+                    scaled_image_bytes = scale_image(image_data)
+                    processed_content_list.append(
+                        {
+                            'image': {
+                                'format': content_item['image']['format'],
+                                'source': {
+                                    'bytes': scaled_image_bytes
+                                }
+                            }
+                        }
+                    )
                 else:
                     # Handle invalid content item
                     logger.warning(f"Invalid content item: {content_item}")

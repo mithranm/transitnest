@@ -8,6 +8,9 @@ import ChatAssistant from './ChatAssistant';
 import { Polyline } from './polyline.tsx';
 import { Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { useRef } from 'react';
+
+
 
 const HousingFinderApp = () => {
   const [searchParams, setSearchParams] = useState({
@@ -112,9 +115,7 @@ const HousingFinderApp = () => {
           role: 'user',
           content: [
             {
-              text: 'Here is a screenshot of the application.'
-            },
-            {
+              text: 'Here is a screenshot of the application.',
               image: {
                 format: 'png',
                 source: {
@@ -205,9 +206,9 @@ const HousingFinderApp = () => {
             <Map
               className="flex-1 w-full"
               defaultCenter={{ lat: 38.897615111606, lng: -77.03526739437355 }}
-              defaultZoom={10}
-              gestureHandling={'greedy'}
-              disableDefaultUI={false}
+              defaultZoom={10.5}
+              gestureHandling={'none'}
+              disableDefaultUI={true}
             >
               {properties.map((property, index) => (
                 <Marker key={index} position={{ lat: property.LAT, lng: property.LNG }} />
