@@ -16,16 +16,6 @@ code {
     monospace;
 }
 
-
-.header{
-  background-color: #1d6fa3;
-  font-size: 40px;
-  -webkit-text-fill-color: rgba(251, 249, 241);
-  padding: 0px 0px 5px 15px;
-  height: 60px;
-  text-align: left;
-}
-
 .search_area{
   background-color: rgba(170, 215, 217);
 }
