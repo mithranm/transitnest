@@ -23,12 +23,12 @@ function App() {
     <Router>
       <div className="App">
         <header className="bg-gray-800 text-white p-4">
-          <h1 className="text-2xl font-bold text-center">TransitNest Housing Finder</h1>
+          <h1 className="text-2xl font-bold text-center">Perspire</h1>
           <nav className="mt-4">
             <ul className="flex justify-center space-x-4">
               <li><Link to="/" className="hover:text-gray-300">Home</Link></li>
+              <li><Link to="/TransitNest" className="hover:text-gray-300">TransitNest</Link></li>
               <li><Link to="/about" className="hover:text-gray-300">About</Link></li>
-              <li><Link to="/housingfinder" className="hover:text-gray-300">Housing Finder</Link></li>
             </ul>
           </nav>
         </header>
@@ -36,8 +36,8 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/housingfinder" element={<HousingFinderApp />} />
+            <Route path="/TransitNest" element={<HousingFinderApp />} />
+            <Route path="/About" element={<About />} />
           </Routes>
         </main>
       </div>
