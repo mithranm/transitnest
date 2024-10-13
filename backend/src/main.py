@@ -1,6 +1,6 @@
 # main.py
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -12,11 +12,20 @@ from typing import List, Dict, Any
 import logging
 import traceback
 import json  # Import json for serialization
-from rate_limiter import RateLimiter
+from rate_limiter import RateLimitMiddleware  # Import the middleware
 
 # Initialize FastAPI app
+
+rate_limits = {
+    "/house_search": {"limit": 10, "window": 60},          # 10 requests per 60 seconds
+    "/get_properties": {"limit": 20, "window": 60},        # 20 requests per 60 seconds
+    "/chat": {"limit": 20, "window": 60},                  # 20 requests per 60 seconds
+    "/graph_historic_price": {"limit": 5, "window": 60},    # 5 requests per 60 seconds
+    "/": {"limit": 100, "window": 60},                      # 100 requests per 60 seconds
+}
+
 app = FastAPI()
-rate_limiter = RateLimiter()
+app.add_middleware(RateLimitMiddleware, limits=rate_limits)
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
