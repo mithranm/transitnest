@@ -19,7 +19,7 @@ const SearchForm = ({ onSearch }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-blue-700 rounded-lg p-4 mb-4 grid grid-cols-2 gap-2">
+    <form onSubmit={handleSubmit} className="bg-cyan-800 rounded-lg p-4 mb-4 grid grid-cols-2 gap-2">
       <label htmlFor="budget" className="text-white">
         Budget
       </label>
@@ -65,10 +65,11 @@ const SearchForm = ({ onSearch }) => {
       <button 
         type="submit" 
         className="
-          bg-indigo-800 text-white 
+          bg-white text-gray-800 
           p-2 
           rounded-md 
-          hover:bg-indigo-700 
+          hover:bg-gray-600
+          hover:text-white
           transition-colors duration-200 
           flex items-center justify-center
         "
